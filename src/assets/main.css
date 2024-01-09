@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "k2d";
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url(/fonts/K2D/K2D-Regular.ttf) format("truetype");
+}
+
+* {
+  font-family: "k2d", sans-serif !important;
+  /* overflow: hidden !important; */
+}
+
+.v-table > .v-table__wrapper > table > thead > tr > td,
+.v-table > .v-table__wrapper > table > thead > tr > th,
+.v-table > .v-table__wrapper > table > tbody > tr > td {
+  padding: 4px 8px !important;
+  white-space: nowrap !important;
+}
+.v-table.none > .v-table__wrapper > table > thead > tr > td,
+.v-table.none > .v-table__wrapper > table > thead > tr > th,
+.v-table.none > .v-table__wrapper > table > tbody > tr > td {
+  white-space: normal !important;
+}
+
+.v-table {
+  background-color: white !important;
+  border-radius: 8px !important;
+}
+
+.v-table__wrapper > table > thead {
+  background-color: #ffffff !important;
+}
+
+.main-menu {
+  overflow: hidden;
+}
+
+.main-menu::before {
+  content: "";
+  position: absolute;
+  width: 88px;
+  height: 100%;
+  border-radius: 0 35.5px 35.5px 0;
+  background: linear-gradient(
+    90deg,
+    rgba(208, 230, 254, 0.5) 1.41%,
+    rgba(208, 230, 254, 0) 100%
+  );
+}
