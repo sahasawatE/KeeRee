@@ -1,22 +1,53 @@
 <template>
-  <v-text-field
-    v-model="displayDate"
-    append-inner-icon="mdi-calendar-blank"
-    :required="$props.required"
-    :rules="input_rules"
-    :readonly="!$props.searchable || readonly"
-    :clearable="$props.searchable"
-    @click:clear="input_value = ''"
-  >
-    <template #label>
-      <div>
-        {{ $props.label }}
-        <span v-if="$props.required" class="text-red">*</span>
-      </div>
-    </template>
+  <div>
+    <v-text-field
+      id="date-picker-field"
+      v-model="displayDate"
+      prepend-inner-icon="mdi-calendar-blank"
+      :required="$props.required"
+      :rules="input_rules"
+      :readonly="!$props.searchable || readonly"
+      :clearable="$props.searchable"
+      @click:clear="input_value = ''"
+    >
+      <template #label>
+        <div>
+          {{ $props.label }}
+          <span v-if="$props.required" class="text-red">*</span>
+        </div>
+      </template>
+    </v-text-field>
+    <v-dialog
+      v-if="isMobile"
+      v-model="dialog"
+      fullscreen
+      activator="#date-picker-field"
+      transition="dialog-bottom-transition"
+      persistent
+    >
+      <v-card flat class="t-h-1/2">
+        <v-toolbar>
+          <v-toolbar-title>{{ $props.label }}</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <v-btn variant="text" color="primary" @click="handleSaveDate">
+              ok
+            </v-btn>
+          </v-toolbar-items>
+        </v-toolbar>
+
+        <v-date-picker
+          v-model="selected_date"
+          hide-header
+          :min="$props.min"
+          :max="$props.max"
+        ></v-date-picker>
+      </v-card>
+    </v-dialog>
     <v-menu
+      v-else
       v-model="openDatePicker"
-      activator="parent"
+      activator="#date-picker-field"
       :close-on-content-click="false"
     >
       <v-card width="fit-content">
@@ -28,12 +59,12 @@
         ></v-date-picker>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="error" @click="openDatePicker = false">cancel</v-btn>
+          <!-- <v-btn color="error" @click="openDatePicker = false">cancel</v-btn> -->
           <v-btn variant="tonal" @click="handleSaveDate">ok</v-btn>
         </v-card-actions>
       </v-card>
     </v-menu>
-  </v-text-field>
+  </div>
 </template>
 
 <script lang="ts">
@@ -90,6 +121,9 @@ export default defineNuxtComponent({
     "update:modelValue": null,
   },
   computed: {
+    isMobile() {
+      return this.$vuetify.display.mobile;
+    },
     displayDate: {
       get() {
         return this.input_value;
@@ -117,6 +151,7 @@ export default defineNuxtComponent({
       input_value:
         this.$props.modelValue === "Invalid date" ? "" : this.$props.modelValue,
       input_rules: this.$props.rules as any[],
+      dialog: false,
     };
   },
   methods: {
@@ -181,6 +216,7 @@ export default defineNuxtComponent({
     handleSaveDate() {
       this.input_value = moment(this.selected_date).format("DD/MM/YYYY");
       this.open_date_picker = false;
+      this.dialog = false;
       this.$emit("update:modelValue", this.input_value);
     },
   },

@@ -15,7 +15,8 @@ export default defineNuxtPlugin((app) => {
           colors: {
             primary: "#124c91",
             secondary: "#0d3565",
-            surface: "#457ab2",
+            // surface: "#457ab2",
+            surface: "#9DC4EE",
             background: "#ffffff",
 
             "blue-50": "#ecf2f7",

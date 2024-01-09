@@ -1,13 +1,16 @@
 <template>
   <div class="d-flex flex-column t-gap-4 t-h-full">
-    <v-card variant="outlined" color="grey-lighten-2">
+    <!-- <v-card variant="outlined" color="grey-lighten-2">
       <v-card-text class="text-grey-darken-1">
         <div class="d-flex flex-row align-center t-gap-2">
           <v-icon>mdi-calendar-blank</v-icon>
           <span>{{ dateGreeting }}</span>
         </div>
       </v-card-text>
-    </v-card>
+    </v-card> -->
+    <div>
+      <common-datepicker />
+    </div>
     <v-card variant="outlined" color="grey-lighten-2">
       <v-card-text class="text-grey-darken-1">
         <div class="d-flex flex-column align-center t-gap-2">

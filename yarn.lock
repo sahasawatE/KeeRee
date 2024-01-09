@@ -3696,10 +3696,10 @@ escape-string-regexp@^5.0.0:
   resolved "https://registry.yarnpkg.com/escape-string-regexp/-/escape-string-regexp-5.0.0.tgz#4683126b500b61762f2dbebace1806e8be31b1c8"
   integrity sha512-/veY75JbMK4j1yjvuUxuVsiS/hr/4iHs9FTT6cgTexxdE0Ly/glccBAkloH/DofkjRbZU3bnoj38mOmhkZ0lHw==
 
-eslint-config-abbot-nuxt3@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/eslint-config-abbot-nuxt3/-/eslint-config-abbot-nuxt3-0.1.0.tgz#18b4a74bbaa221e6b5262d4177c491a420d18127"
-  integrity sha512-7/eDIimyOcojc1IrhutCE0R0FF9li2Kh6aSnWZbIF5ewvxwPgup7PeFu1sP26WcQdcbFQJPa//VijjhkhcuIQA==
+eslint-config-abbot-nuxt3@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/eslint-config-abbot-nuxt3/-/eslint-config-abbot-nuxt3-0.1.1.tgz#ee8f6008e1db6e37dec58d003d579e1fbe2ebf62"
+  integrity sha512-cSaBGsQbFng4Y6RG9UMCa/N/olSfvdO3iZvjXbvvs23mTSwRfBECoNWVx7WSHC9gw1idYaryyOgbkp2iM4byBQ==
   dependencies:
     "@nuxtjs/eslint-config-typescript" "^12.1.0"
     "@typescript-eslint/parser" "^6.9.1"
