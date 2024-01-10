@@ -26,11 +26,11 @@
       persistent
     >
       <v-card flat class="t-h-1/2">
-        <v-toolbar>
+        <v-toolbar color="white">
           <v-toolbar-title>{{ $props.label }}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn variant="text" color="primary" @click="handleSaveDate">
+            <v-btn variant="text" color="blue" @click="handleSaveDate">
               ok
             </v-btn>
           </v-toolbar-items>

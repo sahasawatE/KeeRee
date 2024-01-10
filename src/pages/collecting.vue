@@ -20,6 +20,7 @@
                     variant="underlined"
                     type="number"
                     :hide-details="false"
+                    reverse
                     @update:model-value="(e) => handleInputEggsUnit(e, index)"
                   ></v-text-field>
                   <span v-else>{{ thisData }}</span>
@@ -41,6 +42,7 @@
                     variant="underlined"
                     type="number"
                     :hide-details="false"
+                    reverse
                     @update:model-value="
                       (e) => handleInputEggsNumberUnit(e, index)
                     "
@@ -64,6 +66,7 @@
                     type="number"
                     variant="underlined"
                     :hide-details="false"
+                    reverse
                     :rules="rules.eggs_weight_sum"
                   >
                     <template #append-inner>
@@ -95,6 +98,7 @@
                     variant="underlined"
                     type="number"
                     :hide-details="false"
+                    reverse
                     @update:model-value="(e) => handleInputFoodUnit(e, index)"
                   ></v-text-field>
                   <span v-else>{{ thisData }}</span>
@@ -235,6 +239,7 @@ export default defineNuxtComponent({
       has_value: false,
       editing_egg_id: "",
       editing_food_id: "",
+      editing_eggs_sum: "",
       window: 0,
       rules: {
         eggs_unit: [(v: string) => !!v || "กรุณากรอกจำนวนฟอง"],
@@ -268,11 +273,20 @@ export default defineNuxtComponent({
       const res_egg = await this.$query.get("collect-egg", "date", "==", date);
       const res_food = await this.$query.get("food", "date", "==", date);
 
+      const res_sum = await this.$query.get(
+        "eggs_sum",
+        "record_date",
+        "==",
+        date,
+      );
+
       // เคยบันทึกข้อมูลวันนี้ยัง ?
-      this.has_value = res_egg.length !== 0 && res_food.length !== 0;
+      this.has_value =
+        res_egg.length !== 0 && res_food.length !== 0 && res_sum.length !== 0;
       if (this.has_value) {
         this.editing_egg_id = res_egg[0].id;
         this.editing_food_id = res_food[0].id;
+        this.editing_eggs_sum = res_sum[0].id;
         const data_egg = res_egg[0].data as EggSchema;
         const data_food = res_food[0].data as FoodSchema;
         this.handlePreValue(data_egg, data_food);
@@ -299,6 +313,9 @@ export default defineNuxtComponent({
       this.table_eggs_number.data[2].unit = String(data_egg.egg_number[2]);
       this.table_eggs_number.data[3].unit = String(data_egg.egg_number[3]);
       this.table_eggs_number.data[4].unit = String(data_egg.egg_number[4]);
+      this.table_eggs_number.data[5].unit = String(
+        this.sum(data_egg.egg_number),
+      );
 
       this.table_food.data[0].unit = String(data_food.weight.a);
       this.table_food.data[1].unit = String(data_food.weight.b);
@@ -406,7 +423,11 @@ export default defineNuxtComponent({
 
       try {
         this.store.setLoading(true);
-        if (this.editing_egg_id && this.editing_food_id) {
+        if (
+          this.editing_egg_id &&
+          this.editing_food_id &&
+          this.editing_eggs_sum
+        ) {
           await this.$query.update(
             "collect-egg",
             this.editing_egg_id,
@@ -417,9 +438,17 @@ export default defineNuxtComponent({
             this.editing_food_id,
             param_food_data,
           );
+          await this.$query.update("eggs_sum", this.editing_eggs_sum, {
+            record_date: date,
+            sum: this.sum(egg),
+          });
         } else {
           await this.$query.post("collect-egg", param_egg_data);
           await this.$query.post("food", param_food_data);
+          await this.$query.post("eggs_sum", {
+            record_date: date,
+            sum: this.sum(egg),
+          });
         }
 
         this.$dialog.toast.success("บันทึกเรียบร้อย");

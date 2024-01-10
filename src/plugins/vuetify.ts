@@ -16,7 +16,7 @@ export default defineNuxtPlugin((app) => {
             primary: "#124c91",
             secondary: "#0d3565",
             // surface: "#457ab2",
-            surface: "#9DC4EE",
+            // surface: "#9DC4EE",
             background: "#ffffff",
 
             "blue-50": "#ecf2f7",
@@ -70,7 +70,8 @@ export default defineNuxtPlugin((app) => {
       VBtn: {
         rounded: "lg",
         variant: "flat",
-        class: ["text-white"],
+        dark: true,
+        // class: ["text-white"],
       },
       VTextField: {
         variant: "outlined",
@@ -85,7 +86,7 @@ export default defineNuxtPlugin((app) => {
         color: "white",
       },
       VDatePicker: {
-        color: "primary",
+        color: "blue",
       },
       VList: {
         bgColor: "white",

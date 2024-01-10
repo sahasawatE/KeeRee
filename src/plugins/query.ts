@@ -12,7 +12,12 @@ import {
 } from "firebase/firestore";
 
 type operationString = "<" | "<=" | "==" | "<" | "<=" | "!=";
-type collectionName = "collect-egg" | "accounting" | "food";
+type collectionName =
+  | "collect-egg"
+  | "accounting"
+  | "food"
+  | "selling"
+  | "eggs_sum";
 
 export default defineNuxtPlugin((_app) => {
   const db = useFirestore();
