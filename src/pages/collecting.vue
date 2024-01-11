@@ -240,6 +240,12 @@ export default defineNuxtComponent({
       editing_egg_id: "",
       editing_food_id: "",
       editing_eggs_sum: "",
+      edit_egg_sem_data: {
+        from_yesterday: [0, 0, 0, 0, 0],
+        sum_collect: [0, 0, 0, 0, 0],
+        sum_sell: [0, 0, 0, 0, 0],
+      },
+      from_yesterday: [0, 0, 0, 0, 0],
       window: 0,
       rules: {
         eggs_unit: [(v: string) => !!v || "กรุณากรอกจำนวนฟอง"],
@@ -266,9 +272,19 @@ export default defineNuxtComponent({
     },
   },
   methods: {
+    calYdRemain(yesterday: number[], collect: number[], sell: number[]) {
+      return [
+        utils.sum([yesterday[0], collect[0], -sell[0]]),
+        utils.sum([yesterday[1], collect[1], -sell[1]]),
+        utils.sum([yesterday[2], collect[2], -sell[2]]),
+        utils.sum([yesterday[3], collect[3], -sell[3]]),
+        utils.sum([yesterday[4], collect[4], -sell[4]]),
+      ];
+    },
     async init() {
       this.window = 0;
       const date = moment().format("DD/MM/YYYY");
+      const yd = moment().subtract(1, "d").format("DD/MM/YYYY");
 
       const res_egg = await this.$query.get("collect-egg", "date", "==", date);
       const res_food = await this.$query.get("food", "date", "==", date);
@@ -279,6 +295,22 @@ export default defineNuxtComponent({
         "==",
         date,
       );
+      const res_sum_yd = await this.$query.get(
+        "eggs_sum",
+        "record_date",
+        "==",
+        yd,
+      );
+
+      const yd_remain = res_sum_yd.length
+        ? this.calYdRemain(
+            res_sum_yd[0].data.from_yesterday as number[],
+            res_sum_yd[0].data.sum_collect as number[],
+            res_sum_yd[0].data.sum_sell as number[],
+          )
+        : [0, 0, 0, 0, 0];
+
+      this.from_yesterday = yd_remain;
 
       // เคยบันทึกข้อมูลวันนี้ยัง ?
       this.has_value =
@@ -287,6 +319,7 @@ export default defineNuxtComponent({
         this.editing_egg_id = res_egg[0].id;
         this.editing_food_id = res_food[0].id;
         this.editing_eggs_sum = res_sum[0].id;
+        this.edit_egg_sem_data = res_sum[0].data as any;
         const data_egg = res_egg[0].data as EggSchema;
         const data_food = res_food[0].data as FoodSchema;
         this.handlePreValue(data_egg, data_food);
@@ -300,7 +333,7 @@ export default defineNuxtComponent({
       this.table_eggs.data[2].unit = String(data_egg.amount.c);
       this.table_eggs.data[3].unit = String(data_egg.amount.d);
       this.table_eggs.data[4].unit = String(
-        this.sum([
+        utils.sum([
           data_egg.amount.a,
           data_egg.amount.b,
           data_egg.amount.c,
@@ -314,7 +347,7 @@ export default defineNuxtComponent({
       this.table_eggs_number.data[3].unit = String(data_egg.egg_number[3]);
       this.table_eggs_number.data[4].unit = String(data_egg.egg_number[4]);
       this.table_eggs_number.data[5].unit = String(
-        this.sum(data_egg.egg_number),
+        utils.sum(data_egg.egg_number),
       );
 
       this.table_food.data[0].unit = String(data_food.weight.a);
@@ -322,18 +355,12 @@ export default defineNuxtComponent({
       this.table_food.data[2].unit = String(data_food.weight.c);
       this.table_food.data[3].unit = String(data_food.weight.d);
       this.table_food.data[4].unit = String(
-        this.sum([
+        utils.sum([
           data_food.weight.a,
           data_food.weight.b,
           data_food.weight.c,
           data_food.weight.d,
         ]),
-      );
-    },
-    sum(temp: number[]) {
-      return temp.reduce(
-        (accumulator, current_value) => accumulator + current_value,
-        0,
       );
     },
     handleInputEggsUnit(e: string, i: number) {
@@ -343,7 +370,7 @@ export default defineNuxtComponent({
         .filter((e) => e.column !== "รวมทั้งหมด")
         .map((e) => parseInt(e.unit) || 0);
 
-      this.table_eggs.data[4].unit = String(this.sum(temp));
+      this.table_eggs.data[4].unit = String(utils.sum(temp));
     },
     handleInputFoodUnit(e: string, i: number) {
       this.table_food.data[i].unit = e;
@@ -352,7 +379,7 @@ export default defineNuxtComponent({
         .filter((e) => e.column !== "รวมทั้งหมด")
         .map((e) => parseInt(e.unit) || 0);
 
-      this.table_food.data[4].unit = String(this.sum(temp));
+      this.table_food.data[4].unit = String(utils.sum(temp));
     },
     handleInputEggsNumberUnit(e: string, i: number) {
       this.table_eggs_number.data[i].unit = e;
@@ -361,7 +388,7 @@ export default defineNuxtComponent({
         .filter((e) => e.column !== "รวมทั้งหมด")
         .map((e) => parseInt(e.unit) || 0);
 
-      this.table_eggs_number.data[5].unit = String(this.sum(temp));
+      this.table_eggs_number.data[5].unit = String(utils.sum(temp));
     },
     async handleGoNext() {
       if (!this.has_value) {
@@ -407,7 +434,7 @@ export default defineNuxtComponent({
         },
         egg_number,
         weight_sum,
-        weight_avg: weight_sum / this.sum(egg),
+        weight_avg: weight_sum / utils.sum(egg),
         date,
       };
 
@@ -439,15 +466,19 @@ export default defineNuxtComponent({
             param_food_data,
           );
           await this.$query.update("eggs_sum", this.editing_eggs_sum, {
+            ...this.edit_egg_sem_data,
+            from_yesterday: this.from_yesterday,
             record_date: date,
-            sum: this.sum(egg),
+            sum_collect: egg_number,
           });
         } else {
           await this.$query.post("collect-egg", param_egg_data);
           await this.$query.post("food", param_food_data);
           await this.$query.post("eggs_sum", {
+            ...this.edit_egg_sem_data,
+            from_yesterday: this.from_yesterday,
             record_date: date,
-            sum: this.sum(egg),
+            sum_collect: egg_number,
           });
         }
 

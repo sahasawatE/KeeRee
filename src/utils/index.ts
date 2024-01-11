@@ -40,4 +40,11 @@ export const utils = {
 
     return return_date;
   },
+
+  sum(temp: number[]) {
+    return temp.reduce(
+      (accumulator, current_value) => accumulator + current_value,
+      0,
+    );
+  },
 };

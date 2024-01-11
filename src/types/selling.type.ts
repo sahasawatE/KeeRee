@@ -1,7 +1,6 @@
 type SellingSchema = {
   date: string;
-  egg_amount: number;
-  prices: { price: number; amount: number }[];
+  eggs: { price: number; amount: number }[];
 };
 
 export type { SellingSchema };

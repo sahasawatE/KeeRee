@@ -27,9 +27,9 @@
           <v-icon>mdi-close</v-icon>
         </v-btn>
         <v-toolbar-title>{{ $props.title }}</v-toolbar-title>
-        <v-spacer></v-spacer>
+        <v-spacer v-if="!$props.onlyClose"></v-spacer>
         <v-toolbar-items>
-          <v-btn variant="text" @click="$emit('save')">
+          <v-btn v-if="!$props.onlyClose" variant="text" @click="$emit('save')">
             {{ $props.okText }}
           </v-btn>
         </v-toolbar-items>
@@ -55,6 +55,7 @@
               @click="close"
             />
             <v-btn
+              v-if="!$props.onlyClose"
               :disabled="!$props.isValid"
               :text="$props.okText"
               color="secondary"
@@ -111,6 +112,11 @@ export default defineNuxtComponent({
       type: String,
       required: false,
       default: () => "ยกเลิก",
+    },
+    onlyClose: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
   },
   emits: {
