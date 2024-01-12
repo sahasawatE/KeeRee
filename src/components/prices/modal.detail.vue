@@ -7,9 +7,9 @@
       @close="$emit('close')"
     >
       <div class="d-flex flex-column t-gap-4">
-        <v-tabs v-model="tabs" color="#9DC4EE" grow hide-slider>
-          <v-tab :value="0" variant="flat"> แผง </v-tab>
-          <v-tab :value="1" variant="flat"> ฟอง </v-tab>
+        <v-tabs v-model="tabs" color="primary" grow>
+          <v-tab :value="0"> แผง </v-tab>
+          <v-tab :value="1"> ฟอง </v-tab>
         </v-tabs>
 
         <v-window v-model="tabs" class="t-w-full">
