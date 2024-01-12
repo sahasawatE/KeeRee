@@ -29,12 +29,24 @@
 </template>
 
 <script lang="ts">
+import moment from "moment";
+import { useStore } from "~/stores";
 export default defineNuxtComponent({
   setup() {
     definePageMeta({
       layout: "main",
       middleware: "auth",
     });
+    const store = useStore();
+
+    return {
+      store,
+    };
+  },
+  async mounted() {
+    this.store.setLoading(true);
+    await this.calSum();
+    this.store.setLoading(false);
   },
   data() {
     return {
@@ -64,11 +76,58 @@ export default defineNuxtComponent({
           to: "/eggs",
         },
       ],
+      sum_today_id: "",
     };
   },
   methods: {
     handleClickMenu(to: string) {
       this.$router.push(to);
+    },
+    async calSum() {
+      const today = moment().format("DD/MM/YYYY");
+      const yesterday = moment().subtract(1, "d").format("DD/MM/YYYY");
+
+      const td = await this.$query.get("eggs_sum", "record_date", "==", today);
+      if (!td.length) {
+        const yd = await this.$query.get(
+          "eggs_sum",
+          "record_date",
+          "==",
+          yesterday,
+        );
+
+        const yd_data = {
+          sum_collect: [] as number[],
+          sum_sell: [] as number[],
+          from_yesterday: [] as number[],
+        };
+
+        if (!yd.length) {
+          yd_data.sum_collect = [0, 0, 0, 0, 0];
+          yd_data.sum_sell = [0, 0, 0, 0, 0];
+          yd_data.from_yesterday = [0, 0, 0, 0, 0];
+        } else {
+          const data = yd[0].data;
+          yd_data.sum_collect = data.sum_collect;
+          yd_data.sum_sell = data.sum_sell;
+          yd_data.from_yesterday = data.from_yesterday;
+        }
+
+        if (td.length) {
+          this.sum_today_id = td[0].id;
+        }
+
+        const yd_remain = yd_data.from_yesterday.map((e, i) => {
+          return utils.sum([e, yd_data.sum_collect[i], -yd_data.sum_sell[i]]);
+        });
+
+        await this.$query.post("eggs_sum", {
+          sum_collect: [0, 0, 0, 0, 0],
+          sum_sell: [0, 0, 0, 0, 0],
+          record_date: today,
+          from_yesterday: yd_remain,
+        });
+      }
     },
   },
 });

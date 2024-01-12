@@ -17,6 +17,7 @@ export default defineNuxtPlugin((app) => {
             secondary: "#0d3565",
             // surface: "#457ab2",
             // surface: "#9DC4EE",
+            surface: "#faf7f7",
             background: "#ffffff",
 
             "blue-50": "#ecf2f7",

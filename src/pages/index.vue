@@ -5,7 +5,7 @@
         <v-col cols="6">
           <div class="d-flex flex-column align-center">
             <v-img
-              src="https://picsum.photos/id/870/200/300?grayscale&blur=2"
+              src="/logo/logo.png"
               height="120"
               width="120"
               cover

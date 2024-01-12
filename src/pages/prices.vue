@@ -204,9 +204,11 @@ export default defineNuxtComponent({
         if (res_sum.length) {
           this.edit_sum_id = res_sum[0].id;
 
-          const sell = res_sum[0].data.sum_sell as number[];
-          const collect = res_sum[0].data.sum_collect as number[];
-          const yesterday = res_sum[0].data.from_yesterday as number[];
+          const sum_data = res_sum[0].data;
+
+          const sell = sum_data.sum_sell as number[];
+          const collect = sum_data.sum_collect as number[];
+          const yesterday = sum_data.from_yesterday as number[];
           this.eggs_remain = this.remainEggs(sell, collect, yesterday);
           this.eggs_can_sell = [
             utils.sum([-sell[0], yesterday[0], collect[0]]),
@@ -219,6 +221,8 @@ export default defineNuxtComponent({
           this.sum_data.collect = collect;
           this.sum_data.sell = sell;
           this.sum_data.yesterday = yesterday;
+
+          console.log(sum_data);
         }
 
         if (res_selling.length) {
