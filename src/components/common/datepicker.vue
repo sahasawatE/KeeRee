@@ -19,7 +19,7 @@
     </v-text-field>
     <v-dialog
       v-if="isMobile"
-      v-model="dialog"
+      v-model="openDatePicker"
       fullscreen
       activator="#date-picker-field"
       transition="dialog-bottom-transition"
@@ -151,7 +151,6 @@ export default defineNuxtComponent({
       input_value:
         this.$props.modelValue === "Invalid date" ? "" : this.$props.modelValue,
       input_rules: this.$props.rules as any[],
-      dialog: false,
     };
   },
   methods: {
@@ -216,7 +215,6 @@ export default defineNuxtComponent({
     handleSaveDate() {
       this.input_value = moment(this.selected_date).format("DD/MM/YYYY");
       this.open_date_picker = false;
-      this.dialog = false;
       this.$emit("update:modelValue", this.input_value);
     },
   },

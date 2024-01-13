@@ -1,5 +1,5 @@
 <template>
-  <div class="d-flex flex-column justify-space-between t-h-full">
+  <div class="d-flex flex-column justify-space-between t-h-full t-gap-4">
     <div class="d-flex flex-column t-gap-4">
       <span class="text-grey">{{ dateGreeting }}</span>
 
@@ -10,14 +10,14 @@
 
       <v-window v-model="tabs" class="t-w-full">
         <v-window-item :value="0">
-          <accounting-receive />
+          <accounting-receive ref="receive-form" />
         </v-window-item>
         <v-window-item :value="1">
           <accounting-expense />
         </v-window-item>
       </v-window>
     </div>
-    <v-btn>บันทึก</v-btn>
+    <v-btn @click="handleSave">บันทึก</v-btn>
   </div>
 </template>
 
@@ -50,6 +50,18 @@ export default defineNuxtComponent({
     return {
       tabs: 0,
     };
+  },
+  methods: {
+    async handleSave() {
+      const form1 = this.$refs["receive-form"] as any;
+      const valid1 = await form1.validate();
+
+      console.log(valid1);
+
+      // const valid1 = await form1.validate();
+
+      // console.log(valid1.valid, form1);
+    },
   },
 });
 </script>
