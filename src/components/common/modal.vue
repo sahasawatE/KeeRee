@@ -21,7 +21,7 @@
         indeterminate
       ></v-progress-circular>
     </v-overlay>
-    <v-card color="white">
+    <v-card color="white" :rounded="isMobile ? 'none' : 'lg'">
       <v-toolbar v-if="isMobile" color="surface">
         <v-btn icon @click="$emit('close')">
           <v-icon>mdi-close</v-icon>

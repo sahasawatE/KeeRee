@@ -1,12 +1,6 @@
 <template>
   <div>
-    <v-dialog
-      v-if="isMobile"
-      v-model="openDatePicker"
-      fullscreen
-      transition="dialog-bottom-transition"
-      persistent
-    >
+    <v-bottom-sheet v-if="isMobile" v-model="openDatePicker" persistent>
       <template #activator="{ props }">
         <v-text-field
           v-model="displayDate"
@@ -24,15 +18,9 @@
           </template>
         </v-text-field>
       </template>
-      <v-card flat class="t-h-1/2">
+      <v-card flat rounded="none">
         <v-toolbar color="white">
           <v-toolbar-title>{{ $props.label }}</v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-toolbar-items>
-            <v-btn variant="text" color="blue" @click="handleSaveDate">
-              ok
-            </v-btn>
-          </v-toolbar-items>
         </v-toolbar>
 
         <v-date-picker
@@ -41,8 +29,11 @@
           :min="$props.min"
           :max="$props.max"
         ></v-date-picker>
+        <v-card-actions>
+          <v-btn block variant="flat" @click="handleSaveDate">ok</v-btn>
+        </v-card-actions>
       </v-card>
-    </v-dialog>
+    </v-bottom-sheet>
     <v-menu v-else v-model="openDatePicker" :close-on-content-click="false">
       <template #activator="{ props }">
         <v-text-field

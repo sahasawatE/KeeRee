@@ -57,10 +57,6 @@ export default defineNuxtComponent({
       const valid1 = await form1.validate();
 
       console.log(valid1);
-
-      // const valid1 = await form1.validate();
-
-      // console.log(valid1.valid, form1);
     },
   },
 });
