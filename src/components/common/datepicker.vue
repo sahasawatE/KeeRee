@@ -1,30 +1,29 @@
 <template>
   <div>
-    <v-text-field
-      id="date-picker-field"
-      v-model="displayDate"
-      prepend-inner-icon="mdi-calendar-blank"
-      :required="$props.required"
-      :rules="input_rules"
-      :readonly="!$props.searchable || readonly"
-      :clearable="$props.searchable"
-      @click:clear="input_value = ''"
-    >
-      <template #label>
-        <div>
-          {{ $props.label }}
-          <span v-if="$props.required" class="text-red">*</span>
-        </div>
-      </template>
-    </v-text-field>
     <v-dialog
       v-if="isMobile"
       v-model="openDatePicker"
       fullscreen
-      activator="#date-picker-field"
       transition="dialog-bottom-transition"
       persistent
     >
+      <template #activator="{ props }">
+        <v-text-field
+          v-model="displayDate"
+          v-bind="props"
+          prepend-inner-icon="mdi-calendar-blank"
+          :required="$props.required"
+          :rules="input_rules"
+          :readonly="!$props.searchable || readonly"
+        >
+          <template #label>
+            <div>
+              {{ $props.label }}
+              <span v-if="$props.required" class="text-red">*</span>
+            </div>
+          </template>
+        </v-text-field>
+      </template>
       <v-card flat class="t-h-1/2">
         <v-toolbar color="white">
           <v-toolbar-title>{{ $props.label }}</v-toolbar-title>
@@ -44,12 +43,24 @@
         ></v-date-picker>
       </v-card>
     </v-dialog>
-    <v-menu
-      v-else
-      v-model="openDatePicker"
-      activator="#date-picker-field"
-      :close-on-content-click="false"
-    >
+    <v-menu v-else v-model="openDatePicker" :close-on-content-click="false">
+      <template #activator="{ props }">
+        <v-text-field
+          v-model="displayDate"
+          v-bind="props"
+          prepend-inner-icon="mdi-calendar-blank"
+          :required="$props.required"
+          :rules="input_rules"
+          :readonly="!$props.searchable || readonly"
+        >
+          <template #label>
+            <div>
+              {{ $props.label }}
+              <span v-if="$props.required" class="text-red">*</span>
+            </div>
+          </template>
+        </v-text-field>
+      </template>
       <v-card width="fit-content">
         <v-date-picker
           v-model="selected_date"
