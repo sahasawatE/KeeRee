@@ -54,9 +54,24 @@ export default defineNuxtComponent({
   methods: {
     async handleSave() {
       const form1 = this.$refs["receive-form"] as any;
-      const valid1 = await form1.validate();
+      const result1 = await form1.validate();
+      const errors1 = result1.errors as {
+        errorMessages: string[];
+        id: string;
+      }[];
+      const valid1 = result1.valid as boolean;
 
-      console.log(valid1);
+      const error_txt1 = errors1.map((e) => e.errorMessages[0]);
+
+      if (error_txt1.length) {
+        this.$dialog.toast.warning(
+          `กรุณากรอกจำนวนเงินที่รายการ ${error_txt1.join(", ")}`,
+        );
+      }
+
+      if (valid1) {
+        form1.handleSave();
+      }
     },
   },
 });

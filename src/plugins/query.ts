@@ -1,3 +1,4 @@
+import moment from "moment";
 import { useFirestore } from "vuefire";
 import {
   collection,
@@ -86,6 +87,51 @@ export default defineNuxtPlugin((_app) => {
           try {
             await checking();
             await deleteDoc(doc(db, collectionName, id));
+          } catch (_err) {
+            throw new Error("ไม่สามารถเข้าถึง Database ได้");
+          }
+        },
+      },
+      db: {
+        getLastSum: async () => {
+          type EggsSum = {
+            from_yesterday: number[];
+            sum_collect: number[];
+            sum_sell: number[];
+            record_date: string;
+          };
+          try {
+            await checking();
+            const cl = collection(db, "eggs_sum");
+            const qr = query(cl);
+
+            const result = await getDocs(qr);
+            if (result.docs.length) {
+              const date_result = result.docs.map((e) => {
+                const egg = e.data() as EggsSum;
+                const date = moment(egg.record_date, "DD/MM/YYYY").toDate();
+                return date;
+              });
+              const newest_date = moment(
+                date_result.reduce((a, b) => (a > b ? a : b)),
+              ).format("DD/MM/YYYY");
+              const data = result.docs.find((e) => {
+                const d = e.data() as EggsSum;
+                return d.record_date === newest_date;
+              });
+              if (data) {
+                return [
+                  {
+                    id: data.id,
+                    data: data.data(),
+                  },
+                ];
+              } else {
+                return [];
+              }
+            } else {
+              return [];
+            }
           } catch (_err) {
             throw new Error("ไม่สามารถเข้าถึง Database ได้");
           }

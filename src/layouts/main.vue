@@ -25,7 +25,7 @@
 
     <v-main>
       <v-container fluid class="t-min-h-full d-flex flex-column align-center">
-        <div class="t-w-full t-max-w-[980px]">
+        <div class="t-w-full t-max-w-[640px]">
           <v-row>
             <v-col cols="7">
               <div class="d-flex flex-column t-gap-2">

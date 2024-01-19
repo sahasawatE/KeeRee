@@ -40,7 +40,7 @@
 
     <v-main>
       <v-container fluid class="t-min-h-full d-flex flex-row justify-center">
-        <div class="t-w-full t-max-w-[980px]">
+        <div class="t-w-full t-max-w-[640px]">
           <slot />
         </div>
         <widget-container-modal />

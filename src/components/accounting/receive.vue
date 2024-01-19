@@ -3,52 +3,32 @@
     <span class="font-weight-bold"> กรอกข้อมูล </span>
     <common-data-table :headers="table.headers" :data="table.data">
       <template #data.title="{ thisData, index }">
-        <div v-if="isMobile">
+        <div>
           <v-text-field
             :model-value="thisData"
             density="comfortable"
             variant="outlined"
-            :hide-details="false"
-            :rules="rules.title"
             readonly
             append-inner-icon="mdi-chevron-down"
             @click="handleInputTitle(index)"
           ></v-text-field>
           <v-bottom-sheet
+            v-if="isMobile"
             :model-value="index === select_index"
             @update:model-value="handleBottomSheet"
           >
             <v-card rounded="none">
               <v-card-title>เลือกรายการ</v-card-title>
               <v-card-text>
-                <div>123 {{ index }} {{ select_index }}</div>
+                <accounting-receive-menus v-model="table.data[index].title" />
               </v-card-text>
               <v-card-actions>
-                <v-btn block variant="flat" @click="handleSelectTitle(index)">
+                <v-btn block variant="flat" @click="select_index = -1">
                   เลือก
                 </v-btn>
               </v-card-actions>
             </v-card>
           </v-bottom-sheet>
-        </div>
-        <div v-else>
-          <v-text-field
-            :model-value="thisData"
-            density="comfortable"
-            variant="outlined"
-            :hide-details="false"
-            :rules="rules.title"
-            append-inner-icon="mdi-chevron-down"
-            readonly
-            @click="handleInputTitle(index)"
-          ></v-text-field>
-          <common-modal
-            :active="index === select_index"
-            @close="select_index = -1"
-            @save="handleSelectTitle(index)"
-          >
-            <div>123</div>
-          </common-modal>
         </div>
       </template>
       <template #data.value="{ thisData, index }">
@@ -56,8 +36,7 @@
           :model-value="thisData"
           density="comfortable"
           variant="underlined"
-          :hide-details="false"
-          :rules="rules.value"
+          :rules="valueReuls(index)"
           @update:model-value="(e) => handleInputValue(e, index)"
         ></v-text-field>
       </template>
@@ -89,30 +68,19 @@ export default defineNuxtComponent({
 
     const table = ref({
       headers,
-      data: [] as { title: string; value: string }[],
+      data: [
+        { title: "", value: "" },
+        { title: "", value: "" },
+      ],
     });
 
     const select_index = ref(-1);
-
-    const rules = {
-      title: [(v: string) => !!v || "กรุณากรอกรายการ"],
-      value: [(v: string) => !!v || "กรุณากรอกจำนวนเงิน"],
-    };
 
     const handleAddItems = () => {
       table.value.data.push({
         title: "",
         value: "",
       });
-    };
-
-    const handleInputTitle = (i: number) => {
-      select_index.value = i;
-    };
-
-    const handleSelectTitle = (i: number) => {
-      select_index.value = -1;
-      table.value.data[i].title = "123";
     };
 
     const handleInputValue = (e: string, i: number) => {
@@ -128,11 +96,8 @@ export default defineNuxtComponent({
     return {
       table,
       handleAddItems,
-      handleInputTitle,
       handleInputValue,
-      rules,
       select_index,
-      handleSelectTitle,
       handleBottomSheet,
     };
   },
@@ -142,15 +107,30 @@ export default defineNuxtComponent({
     },
   },
   methods: {
+    valueReuls(index: number) {
+      if (this.table.data[index].title) {
+        return [(v: string) => !!v || this.table.data[index].title];
+      }
+      return [];
+    },
     async validate() {
       if (this.table.data.length === 0) {
         this.$dialog.toast.warning("ไม่มีข้อมูลให้อัพโหลด");
         return false;
       }
       const ref = this.$refs["receive-form"] as any;
-      const { valid } = await ref.validate();
+      const result = await ref.validate();
 
-      return valid;
+      return result;
+    },
+    handleInputTitle(i: number) {
+      this.select_index = i;
+    },
+    handleSave() {
+      const temp = this.table.data.filter(
+        (e) => e.title !== "" && e.value !== "",
+      );
+      console.log(temp);
     },
   },
 });
