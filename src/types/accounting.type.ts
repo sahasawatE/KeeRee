@@ -1,13 +1,13 @@
-type ReceiveMenuItem = {
+type MenuItem = {
   value: string;
   title: string;
 };
 
-type ReceiveEditData = {
+type EditData = {
   value: string;
   other: string;
   title: string;
   price: number;
 }[];
 
-export type { ReceiveMenuItem, ReceiveEditData };
+export type { MenuItem, EditData };

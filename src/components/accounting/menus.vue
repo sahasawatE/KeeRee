@@ -5,6 +5,9 @@
     :model-value="$props.open"
     @update:model-value="handleSelect"
   >
+    <template #activator="{ props }">
+      <slot name="activator" :props="props" />
+    </template>
     <v-card rounded="none">
       <v-card-title>เลือกรายการ</v-card-title>
       <v-card-text>
@@ -19,8 +22,8 @@
         <v-text-field
           v-model="other"
           label="ระบุอื่น ๆ"
-          :disabled="model !== '6'"
-          :rules="model === '6' ? rules.other : []"
+          :disabled="model !== '0'"
+          :rules="model === '0' ? rules.other : []"
         ></v-text-field>
       </v-card-text>
       <v-card-actions>
@@ -35,6 +38,35 @@
       </v-card-actions>
     </v-card>
   </v-bottom-sheet>
+  <v-menu
+    v-else
+    :model-value="$props.open"
+    :close-on-content-click="false"
+    :persistent="canClose"
+    @update:model-value="handleSelect"
+  >
+    <template #activator="{ props }">
+      <slot name="activator" :props="props" />
+    </template>
+    <v-card>
+      <v-card-text>
+        <v-radio-group v-model="modelData" color="primary">
+          <v-radio
+            v-for="(m, i) in menu_items"
+            :key="i"
+            :label="m.title"
+            :value="m.value"
+          ></v-radio>
+        </v-radio-group>
+        <v-text-field
+          v-model="other"
+          label="ระบุอื่น ๆ"
+          :disabled="model !== '0'"
+          :rules="model === '0' ? rules.other : []"
+        ></v-text-field>
+      </v-card-text>
+    </v-card>
+  </v-menu>
 </template>
 
 <script lang="ts">
@@ -49,14 +81,7 @@ export default defineNuxtComponent({
     const model = ref(props.modelValue.value);
     const other = ref(props.other);
 
-    const menu_items = ref([
-      { value: "1", title: "ไข่ไก่" },
-      { value: "2", title: "ปุ๋ยขี้ไก่ไข่" },
-      { value: "3", title: "ไก่ไข่ปลดระวาง" },
-      { value: "4", title: "ไข่ไก่แปรรูป" },
-      { value: "5", title: "ชะลอมไข่ไก่" },
-      { value: "6", title: "อื่น ๆ (โปรดระบุ)" },
-    ]);
+    const menu_items = ref(props.items);
 
     const rules = {
       other: [(v: string) => !!v || "กรุณาระบุ"],
@@ -72,6 +97,10 @@ export default defineNuxtComponent({
   props: {
     modelValue: {
       type: Object as PropType<ReceiveMenuItem>,
+      required: true,
+    },
+    items: {
+      type: Array as PropType<ReceiveMenuItem[]>,
       required: true,
     },
     other: {
@@ -100,7 +129,7 @@ export default defineNuxtComponent({
         };
         this.model = result.value;
         this.$emit("update:modelValue", result);
-        if (e !== "6") {
+        if (e !== "0") {
           this.other = "";
           this.$emit("update:other", this.other);
         }
@@ -111,7 +140,7 @@ export default defineNuxtComponent({
     },
     canSelect() {
       if (this.model) {
-        if (this.model === "6") {
+        if (this.model === "0") {
           return this.other.length > 0;
         }
         return true;
@@ -122,7 +151,7 @@ export default defineNuxtComponent({
       if (!this.model) {
         return false;
       }
-      if (this.model === "6") {
+      if (this.model === "0") {
         return this.other.length === 0;
       }
     },

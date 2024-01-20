@@ -9,34 +9,45 @@
       </v-tabs>
 
       <v-window v-model="tabs" class="t-w-full">
-        <v-window-item :value="0">
+        <v-window-item :value="0" eager>
           <accounting-receive
             v-if="!store.loading"
             ref="receive-form"
+            :editing="editing"
             :edit-id="edit_id"
             :edit-data="edit_data?.receive"
             :edit-date="edit_data?.date"
           />
         </v-window-item>
-        <v-window-item :value="1">
-          <accounting-expense />
+        <v-window-item :value="1" eager>
+          <accounting-expense
+            v-if="!store.loading"
+            ref="expense-form"
+            :editing="editing"
+            :edit-id="edit_id"
+            :edit-data="edit_data?.expense"
+            :edit-date="edit_data?.date"
+          />
         </v-window-item>
       </v-window>
     </div>
-    <v-btn @click="handleSave">บันทึก</v-btn>
+    <v-btn @click="handleSave">
+      {{ editing ? "แก้ไขข้อมูล" : "บันทึก" }}
+    </v-btn>
   </div>
 </template>
 
 <script lang="ts">
 import moment from "moment-with-locales-es6";
+import type { VForm } from "vuetify/lib/components/index.mjs";
 import { useStore } from "~/stores";
 
-import type { ReceiveEditData } from "~/types/accounting/receive.type";
+import type { EditData } from "~/types/accounting.type";
 
-type EditData = {
+type EditDataRes = {
   date: string;
-  receive: ReceiveEditData;
-  expense: any[];
+  receive: EditData;
+  expense: EditData;
 };
 
 export default defineNuxtComponent({
@@ -49,12 +60,15 @@ export default defineNuxtComponent({
     const store = useStore();
 
     const edit_id = ref("");
-    const edit_data = ref<EditData>();
+    const edit_data = ref<EditDataRes>();
+
+    const editing = ref(false);
 
     return {
       store,
       edit_id,
       edit_data,
+      editing,
     };
   },
   mounted() {
@@ -74,43 +88,79 @@ export default defineNuxtComponent({
   },
   methods: {
     async init() {
-      this.store.setLoading(true);
-      const res = await this.$query.get(
-        "accounting",
-        "date",
-        "==",
-        moment().format("DD/MM/YYYY"),
-      );
-      this.store.setLoading(false);
-      if (res.length) {
-        const { data, id } = res[0] as { data: any; id: string };
-        this.edit_id = id;
-        this.edit_data = data;
-      } else {
-        this.edit_id = "";
+      try {
+        this.store.setLoading(true);
+        const res = await this.$query.get(
+          "accounting",
+          "date",
+          "==",
+          moment().format("DD/MM/YYYY"),
+        );
+        if (res.length) {
+          const { data, id } = res[0] as { data: any; id: string };
+          this.edit_id = id;
+          this.edit_data = data;
+          this.editing = true;
+        } else {
+          const date = moment().format("DD/MM/YYYY");
+          await this.$query.post("accounting", {
+            date,
+            expense: [],
+            receive: [],
+          });
+          const [res] = await this.$query.get("accounting", "date", "==", date);
+          const { data, id } = res;
+          this.edit_data = data as EditDataRes;
+          this.edit_id = id;
+          this.editing = false;
+        }
+      } catch (err) {
+        this.$dialog.toast.error(err as string);
+      } finally {
+        this.store.setLoading(false);
       }
     },
     async handleSave() {
-      const form1 = this.$refs["receive-form"] as any;
-      const result1 = await form1.validate();
-      const errors1 = result1.errors as {
-        errorMessages: string[];
-        id: string;
-      }[];
-      const valid1 = result1.valid as boolean;
+      if (this.editing) {
+        this.editing = false;
+      } else {
+        const form1 = this.$refs["receive-form"] as VForm;
+        const form2 = this.$refs["expense-form"] as VForm;
 
-      const error_txt1 = errors1.map((e) => e.errorMessages[0]);
+        const result1 = await form1.validate();
+        const result2 = await form2.validate();
 
-      if (error_txt1.length) {
-        this.$dialog.toast.warning(
-          `กรุณากรอกข้อมูลรายการ ${error_txt1.join(", ")} ให้ครบถ้วน`,
-        );
+        const errors1 = result1.errors;
+        const errors2 = result2.errors;
+
+        const valid1 = result1.valid;
+        const valid2 = result2.valid;
+
+        const error_txt1 = errors1.map((e) => e.errorMessages[0]);
+        const error_txt2 = errors2.map((e) => e.errorMessages[0]);
+
+        if (error_txt1.length) {
+          this.$dialog.toast.warning(
+            `กรุณากรอกข้อมูลรายรับรายการ ${error_txt1.join(", ")} ให้ครบถ้วน`,
+          );
+        }
+        if (error_txt2.length) {
+          this.$dialog.toast.warning(
+            `กรุณากรอกข้อมูลรายจ่ายรายการ ${error_txt2.join(", ")} ให้ครบถ้วน`,
+          );
+        }
+
+        try {
+          if (valid1 && valid2) {
+            await form1.handleSave();
+            await form2.handleSave();
+          }
+        } catch (err) {
+          this.$dialog.toast.error(err as string);
+        } finally {
+          await this.init();
+        }
       }
-
-      if (valid1) {
-        await form1.handleSave();
-      }
-      await this.init();
     },
   },
 });
