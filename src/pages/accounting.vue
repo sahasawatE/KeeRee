@@ -10,7 +10,13 @@
 
       <v-window v-model="tabs" class="t-w-full">
         <v-window-item :value="0">
-          <accounting-receive ref="receive-form" />
+          <accounting-receive
+            v-if="!store.loading"
+            ref="receive-form"
+            :edit-id="edit_id"
+            :edit-data="edit_data?.receive"
+            :edit-date="edit_data?.date"
+          />
         </v-window-item>
         <v-window-item :value="1">
           <accounting-expense />
@@ -24,6 +30,15 @@
 <script lang="ts">
 import moment from "moment-with-locales-es6";
 import { useStore } from "~/stores";
+
+import type { ReceiveEditData } from "~/types/accounting/receive.type";
+
+type EditData = {
+  date: string;
+  receive: ReceiveEditData;
+  expense: any[];
+};
+
 export default defineNuxtComponent({
   setup() {
     definePageMeta({
@@ -33,12 +48,18 @@ export default defineNuxtComponent({
 
     const store = useStore();
 
+    const edit_id = ref("");
+    const edit_data = ref<EditData>();
+
     return {
       store,
+      edit_id,
+      edit_data,
     };
   },
   mounted() {
     this.store.setMenuTitle("บันทึกรายรับ - รายจ่าย");
+    this.init();
   },
   computed: {
     dateGreeting() {
@@ -52,6 +73,23 @@ export default defineNuxtComponent({
     };
   },
   methods: {
+    async init() {
+      this.store.setLoading(true);
+      const res = await this.$query.get(
+        "accounting",
+        "date",
+        "==",
+        moment().format("DD/MM/YYYY"),
+      );
+      this.store.setLoading(false);
+      if (res.length) {
+        const { data, id } = res[0] as { data: any; id: string };
+        this.edit_id = id;
+        this.edit_data = data;
+      } else {
+        this.edit_id = "";
+      }
+    },
     async handleSave() {
       const form1 = this.$refs["receive-form"] as any;
       const result1 = await form1.validate();
@@ -65,13 +103,14 @@ export default defineNuxtComponent({
 
       if (error_txt1.length) {
         this.$dialog.toast.warning(
-          `กรุณากรอกจำนวนเงินที่รายการ ${error_txt1.join(", ")}`,
+          `กรุณากรอกข้อมูลรายการ ${error_txt1.join(", ")} ให้ครบถ้วน`,
         );
       }
 
       if (valid1) {
-        form1.handleSave();
+        await form1.handleSave();
       }
+      await this.init();
     },
   },
 });

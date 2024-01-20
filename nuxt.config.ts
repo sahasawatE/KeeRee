@@ -7,6 +7,11 @@ export default defineNuxtConfig({
   build: {
     transpile: ["vuetify", "vue-sonner"],
   },
+  app: {
+    head: {
+      link: [{ rel: "icon", type: "image/png", href: "/logo/logo.png" }],
+    },
+  },
   modules: [
     (_options, nuxt) => {
       nuxt.hooks.hook("vite:extendConfig", (config) => {

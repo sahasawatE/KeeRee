@@ -2,43 +2,56 @@
   <v-form ref="receive-form" lazy-validation class="d-flex flex-column t-gap-4">
     <span class="font-weight-bold"> กรอกข้อมูล </span>
     <common-data-table :headers="table.headers" :data="table.data">
-      <template #data.title="{ thisData, index }">
+      <template
+        #data.display_title="{
+          index,
+          data,
+        }: {
+          index: number;
+          data: { title: string; value: string; other: string; price: string };
+        }"
+      >
         <div>
           <v-text-field
-            :model-value="thisData"
+            :model-value="data.value === '6' ? data.other : data.title"
+            :rules="titleRules(index)"
             density="comfortable"
             variant="outlined"
             readonly
             append-inner-icon="mdi-chevron-down"
             @click="handleInputTitle(index)"
           ></v-text-field>
-          <v-bottom-sheet
-            v-if="isMobile"
-            :model-value="index === select_index"
-            @update:model-value="handleBottomSheet"
-          >
-            <v-card rounded="none">
-              <v-card-title>เลือกรายการ</v-card-title>
-              <v-card-text>
-                <accounting-receive-menus v-model="table.data[index].title" />
-              </v-card-text>
-              <v-card-actions>
-                <v-btn block variant="flat" @click="select_index = -1">
-                  เลือก
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-bottom-sheet>
+          <accounting-receive-menus
+            :open="index === select_index"
+            :other="table.data[index].other"
+            :model-value="{
+              title: table.data[index].title,
+              value: table.data[index].value,
+            }"
+            @update:other="(e) => handleOtherChange(index, e)"
+            @update:model-value="(e) => handleTableTitleChange(e, index)"
+            @close="handleBottomSheet"
+          />
         </div>
       </template>
-      <template #data.value="{ thisData, index }">
+      <template #data.price="{ thisData, index }">
         <v-text-field
           :model-value="thisData"
+          type="number"
           density="comfortable"
           variant="underlined"
-          :rules="valueReuls(index)"
-          @update:model-value="(e) => handleInputValue(e, index)"
+          :rules="priceReuls(index)"
+          @update:model-value="(e) => handleInputPrice(e, index)"
         ></v-text-field>
+      </template>
+      <template #data.delete="{ index }">
+        <v-btn
+          v-if="table.data.length >= 3"
+          icon="mdi-close-circle-outline"
+          variant="text"
+          color="error"
+          @click="handleDeleteItem(index)"
+        ></v-btn>
       </template>
     </common-data-table>
     <v-btn variant="tonal" prepend-icon="mdi-plus" @click="handleAddItems">
@@ -48,30 +61,52 @@
 </template>
 
 <script lang="ts">
+import type { PropType } from "vue";
 import type { HeaderProp } from "~/types/table.type";
+import type {
+  ReceiveMenuItem,
+  ReceiveEditData,
+} from "~/types/accounting/receive.type";
 
 export default defineNuxtComponent({
-  setup() {
+  setup(props) {
+    const { editData, editDate, editId } = props;
+    const store = useStore();
+
     const headers: HeaderProp = [
       {
-        key: "title",
+        key: "display_title",
         title: "รายการ",
         width: "50%",
       },
       {
-        key: "value",
+        key: "price",
         title: "บาท",
         align: "end",
-        width: "50%",
+        width: "45%",
+      },
+      {
+        key: "delete",
+        title: "",
+        align: "end",
+        width: "5%",
       },
     ];
 
+    const edit_id = ref(editId);
+    const edit_date = ref(editDate);
+    const edit_data = ref(
+      editData.map((e) => ({ ...e, price: String(e.price) })),
+    );
+
     const table = ref({
       headers,
-      data: [
-        { title: "", value: "" },
-        { title: "", value: "" },
-      ],
+      data: edit_data.value.length
+        ? edit_data.value
+        : [
+            { title: "", value: "", other: "", price: "" },
+            { title: "", value: "", other: "", price: "" },
+          ],
     });
 
     const select_index = ref(-1);
@@ -80,11 +115,13 @@ export default defineNuxtComponent({
       table.value.data.push({
         title: "",
         value: "",
+        other: "",
+        price: "",
       });
     };
 
-    const handleInputValue = (e: string, i: number) => {
-      table.value.data[i].value = e;
+    const handleInputPrice = (e: string, i: number) => {
+      table.value.data[i].price = e;
     };
 
     const handleBottomSheet = (e: boolean) => {
@@ -96,22 +133,53 @@ export default defineNuxtComponent({
     return {
       table,
       handleAddItems,
-      handleInputValue,
+      handleInputPrice,
       select_index,
       handleBottomSheet,
+      store,
+      edit_id,
+      edit_date,
     };
   },
-  computed: {
-    isMobile() {
-      return this.$vuetify.display.mobile;
+  props: {
+    editId: {
+      type: String,
+      required: false,
+      default: "",
+    },
+    editData: {
+      type: Array as PropType<ReceiveEditData>,
+      required: false,
+      default: () => [],
+    },
+    editDate: {
+      type: String,
+      required: false,
+      default: "",
     },
   },
   methods: {
-    valueReuls(index: number) {
-      if (this.table.data[index].title) {
-        return [(v: string) => !!v || this.table.data[index].title];
+    priceReuls(index: number) {
+      if (this.table.data[index].value) {
+        return [(v: string) => !!v || String(index + 1)];
       }
       return [];
+    },
+    titleRules(index: number) {
+      if (this.table.data[index].price) {
+        return [(v: string) => !!v || String(index + 1)];
+      }
+      return [];
+    },
+    handleTableTitleChange(data: ReceiveMenuItem, i: number) {
+      this.table.data[i].title = data.title;
+      this.table.data[i].value = data.value;
+      if (data.value !== "6") {
+        this.table.data[i].other = "";
+      }
+    },
+    handleOtherChange(i: number, e: string) {
+      this.table.data[i].other = e;
     },
     async validate() {
       if (this.table.data.length === 0) {
@@ -126,11 +194,32 @@ export default defineNuxtComponent({
     handleInputTitle(i: number) {
       this.select_index = i;
     },
-    handleSave() {
-      const temp = this.table.data.filter(
-        (e) => e.title !== "" && e.value !== "",
+    handleDeleteItem(i: number) {
+      this.table.data.splice(i, 1);
+    },
+    async handleSave() {
+      const temp_filter = this.table.data.filter(
+        (e) => e.value !== "" && e.price !== "",
       );
-      console.log(temp);
+      const temp = temp_filter.map((e) => ({
+        ...e,
+        price: Number(e.price),
+      }));
+      try {
+        this.store.setLoading(true);
+        if (this.edit_id && this.edit_date) {
+          await this.$query.update("accounting", this.edit_id, {
+            date: this.edit_date,
+            receive: temp,
+          });
+        } else {
+          console.log("add", temp);
+        }
+      } catch (err) {
+        this.$dialog.toast.error(err as string);
+      } finally {
+        this.store.setLoading(false);
+      }
     },
   },
 });
