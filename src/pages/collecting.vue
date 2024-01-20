@@ -285,14 +285,14 @@ export default defineNuxtComponent({
         date,
       );
 
+      this.editing_eggs_sum = res_sum[0].id;
+      this.edit_egg_sem_data = res_sum[0].data as any;
+
       // เคยบันทึกข้อมูลวันนี้ยัง ?
-      this.has_value =
-        res_egg.length !== 0 && res_food.length !== 0 && res_sum.length !== 0;
+      this.has_value = res_egg.length !== 0 && res_food.length !== 0;
       if (this.has_value) {
         this.editing_egg_id = res_egg[0].id;
         this.editing_food_id = res_food[0].id;
-        this.editing_eggs_sum = res_sum[0].id;
-        this.edit_egg_sem_data = res_sum[0].data as any;
         const data_egg = res_egg[0].data as EggSchema;
         const data_food = res_food[0].data as FoodSchema;
         this.handlePreValue(data_egg, data_food);
