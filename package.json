@@ -27,6 +27,7 @@
     "@mdi/font": "^7.3.67",
     "@pinia/nuxt": "^0.5.1",
     "buffer": "^6.0.3",
+    "chart.js": "^4.4.1",
     "firebase": "^10.7.1",
     "firebase-admin": "^12.0.0",
     "firebase-functions": "^4.5.0",
@@ -36,6 +37,7 @@
     "moment-with-locales-es6": "^1.0.1",
     "nuxt-vuefire": "^1.0.0",
     "pinia": "^2.1.7",
+    "vue-chart-3": "^3.1.8",
     "vuefire": "^3.1.19",
     "vuetify-sonner": "^0.3.12"
   }

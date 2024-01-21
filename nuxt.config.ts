@@ -37,10 +37,10 @@ export default defineNuxtConfig({
   },
   vuefire: {
     config: {
-      apiKey: "AIzaSyAMucvrvxlbjI-oGHtKstogxAgBLi_Yb8M",
-      authDomain: "keeree-df429.firebaseapp.com",
-      projectId: "keeree-df429",
-      appId: "1:403833597386:web:b72ea884ce74096e457333",
+      apiKey: process.env.APIKey,
+      authDomain: process.env.AuthDomain,
+      projectId: process.env.ProjectID,
+      appId: process.env.AppID,
     },
   },
 });
