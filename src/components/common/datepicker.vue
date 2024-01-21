@@ -9,6 +9,7 @@
           :required="$props.required"
           :rules="input_rules"
           :readonly="!$props.searchable || readonly"
+          @click:control="$emit('click')"
         >
           <template #label>
             <div>
@@ -43,6 +44,7 @@
           :required="$props.required"
           :rules="input_rules"
           :readonly="!$props.searchable || readonly"
+          @click:control="$emit('click')"
         >
           <template #label>
             <div>
@@ -83,7 +85,7 @@ export default defineNuxtComponent({
     label: {
       type: String,
       required: false,
-      default: () => "select date",
+      default: () => "เลือกวันที่",
     },
     searchable: {
       type: Boolean,
@@ -121,6 +123,7 @@ export default defineNuxtComponent({
   },
   emits: {
     "update:modelValue": null,
+    click: null,
   },
   computed: {
     isMobile() {

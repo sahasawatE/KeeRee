@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <client-only>
-      <v-sonner :hotkey="['KeyC']" />
+      <v-sonner />
     </client-only>
     <v-overlay
       persistent

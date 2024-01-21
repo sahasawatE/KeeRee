@@ -3,4 +3,17 @@ type SellingSchema = {
   eggs: { price: number; amount: number }[];
 };
 
-export type { SellingSchema };
+type SumSchema = {
+  sum_sell: number[];
+  sum_collect: number[];
+  form_yesterday: number[];
+  redord_date: string;
+};
+
+type SumDetails = {
+  sell: number[];
+  collect: number[];
+  yesterday: number[];
+};
+
+export type { SellingSchema, SumSchema, SumDetails };

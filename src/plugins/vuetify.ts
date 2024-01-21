@@ -77,6 +77,7 @@ export default defineNuxtPlugin((app) => {
       VTextField: {
         variant: "outlined",
         hideDetails: true,
+        hideSpinButtons: true,
         color: "primary",
         density: "comfortable",
       },

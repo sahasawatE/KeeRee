@@ -77,11 +77,10 @@ import type { PropType } from "vue";
 import type { VForm } from "vuetify/lib/components/index.mjs";
 import type { HeaderProp } from "~/types/table.type";
 import type { MenuItem, EditData } from "~/types/accounting.type";
-import type { ReceiveMenuItem } from "~/types/accounting/receive.type";
 
 export default defineNuxtComponent({
   setup(props) {
-    const { editData, editDate, editId } = props;
+    const { editData } = props;
     const store = useStore();
 
     const headers: HeaderProp = [
@@ -104,8 +103,6 @@ export default defineNuxtComponent({
       },
     ];
 
-    const edit_id = ref(editId);
-    const edit_date = ref(editDate);
     const edit_data = ref(
       editData.map((e) => ({ ...e, price: String(e.price) })),
     );
@@ -141,7 +138,7 @@ export default defineNuxtComponent({
       }
     };
 
-    const menu_items: ReceiveMenuItem[] = [
+    const menu_items: MenuItem[] = [
       { value: "1", title: "อาหารไก่ไข" },
       { value: "2", title: "ค่าขนส่งอาหารไก่ไข่" },
       { value: "3", title: "แกลบรองพื้นขี้ไก่ไข่" },
@@ -161,26 +158,14 @@ export default defineNuxtComponent({
       select_index,
       handleBottomSheet,
       store,
-      edit_id,
-      edit_date,
       menu_items,
     };
   },
   props: {
-    editId: {
-      type: String,
-      required: false,
-      default: "",
-    },
     editData: {
       type: Array as PropType<EditData>,
       required: false,
       default: () => [],
-    },
-    editDate: {
-      type: String,
-      required: false,
-      default: "",
     },
     editing: {
       type: Boolean,
@@ -228,7 +213,7 @@ export default defineNuxtComponent({
     handleDeleteItem(i: number) {
       this.table.data.splice(i, 1);
     },
-    async handleSave() {
+    handleSave() {
       const temp_filter = this.table.data.filter(
         (e) => e.value !== "" && e.price !== "",
       );
@@ -236,18 +221,7 @@ export default defineNuxtComponent({
         ...e,
         price: Number(e.price),
       }));
-      try {
-        if (this.edit_id && this.edit_date) {
-          await this.$query.update("accounting", this.edit_id, {
-            date: this.edit_date,
-            expense: temp,
-          });
-        } else {
-          this.$dialog.toast.error("เกิดข้อผิดพลาดระหว่างอัพโหลดข้อมูล");
-        }
-      } catch (err) {
-        throw new Error(err as string);
-      }
+      return { expense: temp };
     },
   },
 });

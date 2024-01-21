@@ -68,7 +68,11 @@
     <v-btn v-if="!viewHistory" color="primary" @click="handleSave">
       {{ has_value ? "แก้ไขข้อมูล" : "บันทึก" }}
     </v-btn>
-    <prices-modal-detail :open="detail_modal" @close="detail_modal = false" />
+    <prices-modal-detail
+      :open="detail_modal"
+      :eggs="sum_data"
+      @close="detail_modal = false"
+    />
   </div>
 </template>
 
@@ -221,8 +225,6 @@ export default defineNuxtComponent({
           this.sum_data.collect = collect;
           this.sum_data.sell = sell;
           this.sum_data.yesterday = yesterday;
-
-          console.log(sum_data);
         }
 
         if (res_selling.length) {

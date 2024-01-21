@@ -102,17 +102,19 @@ export default defineNuxtComponent({
           this.edit_data = data;
           this.editing = true;
         } else {
-          const date = moment().format("DD/MM/YYYY");
-          await this.$query.post("accounting", {
-            date,
-            expense: [],
-            receive: [],
-          });
-          const [res] = await this.$query.get("accounting", "date", "==", date);
-          const { data, id } = res;
-          this.edit_data = data as EditDataRes;
-          this.edit_id = id;
           this.editing = false;
+          this.edit_id = "";
+          // const date = moment().format("DD/MM/YYYY");
+          // await this.$query.post("accounting", {
+          //   date,
+          //   expense: [],
+          //   receive: [],
+          // });
+          // const [res] = await this.$query.get("accounting", "date", "==", date);
+          // const { data, id } = res;
+          // this.edit_data = data as EditDataRes;
+          // this.edit_id = id;
+          // this.editing = false;
         }
       } catch (err) {
         this.$dialog.toast.error(err as string);
@@ -151,14 +153,31 @@ export default defineNuxtComponent({
         }
 
         try {
+          this.store.setLoading(true);
           if (valid1 && valid2) {
-            await form1.handleSave();
-            await form2.handleSave();
+            const { receive } = form1.handleSave();
+            const { expense } = form2.handleSave();
+
+            if (this.edit_id) {
+              await this.$query.update("accounting", this.edit_id, {
+                date: this.edit_data?.date,
+                receive,
+                expense,
+              });
+            } else {
+              await this.$query.post("accounting", {
+                date: moment().format("DD/MM/YYYY"),
+                receive,
+                expense,
+              });
+            }
+
+            await this.init();
           }
         } catch (err) {
           this.$dialog.toast.error(err as string);
         } finally {
-          await this.init();
+          this.store.setLoading(false);
         }
       }
     },
