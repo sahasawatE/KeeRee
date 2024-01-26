@@ -73,7 +73,7 @@ export default defineNuxtComponent({
           title: "ข้อมูลไข่ทั้งหมด",
           sub: "ประวัติข้อมูลของการบันทึกไข่",
           icon: "/eggs.png",
-          to: "/eggs",
+          to: "/reports",
         },
       ],
       sum_today_id: "",
