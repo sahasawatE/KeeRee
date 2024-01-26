@@ -10,4 +10,17 @@ type EditData = {
   price: number;
 }[];
 
-export type { MenuItem, EditData };
+type ResponseAccItem = {
+  other: string;
+  price: number;
+  title: string;
+  value: string;
+};
+
+type ResponseAcc = {
+  date: string;
+  expense: ResponseAccItem[];
+  receive: ResponseAccItem[];
+};
+
+export type { MenuItem, EditData, ResponseAcc, ResponseAccItem };

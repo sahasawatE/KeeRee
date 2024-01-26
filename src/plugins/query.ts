@@ -11,6 +11,7 @@ import {
   doc,
   deleteDoc,
 } from "firebase/firestore";
+import type { Response } from "~/types/query.type";
 
 type operationString = "<" | "<=" | "==" | "<" | "<=" | "!=";
 type collectionName =
@@ -39,7 +40,7 @@ export default defineNuxtPlugin((_app) => {
           key?: string,
           optStr?: operationString,
           value?: string,
-        ) => {
+        ): Promise<Response[]> => {
           try {
             await checking();
             const cl = collection(db, collectionName);
@@ -62,7 +63,7 @@ export default defineNuxtPlugin((_app) => {
         post: async (
           collectionName: collectionName,
           value: { [key: string]: any },
-        ) => {
+        ): Promise<void> => {
           try {
             await checking();
             const cl = collection(db, collectionName);
@@ -75,7 +76,7 @@ export default defineNuxtPlugin((_app) => {
           collectionName: collectionName,
           id: string,
           value: { [key: string]: any },
-        ) => {
+        ): Promise<void> => {
           try {
             await checking();
             await updateDoc(doc(db, collectionName, id), value);
@@ -83,7 +84,10 @@ export default defineNuxtPlugin((_app) => {
             throw new Error("ไม่สามารถเข้าถึง Database ได้");
           }
         },
-        delete: async (collectionName: collectionName, id: string) => {
+        delete: async (
+          collectionName: collectionName,
+          id: string,
+        ): Promise<void> => {
           try {
             await checking();
             await deleteDoc(doc(db, collectionName, id));
@@ -93,7 +97,7 @@ export default defineNuxtPlugin((_app) => {
         },
       },
       db: {
-        getLastSum: async () => {
+        getLastSum: async (): Promise<Response[]> => {
           type EggsSum = {
             from_yesterday: number[];
             sum_collect: number[];
