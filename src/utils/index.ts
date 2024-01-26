@@ -1,3 +1,5 @@
+import { Buffer } from "buffer";
+
 export const utils = {
   numOnly(data: string) {
     return data.replace(/[^0-9]+/g, "");
@@ -46,5 +48,20 @@ export const utils = {
       (accumulator, current_value) => accumulator + current_value,
       0,
     );
+  },
+
+  enCvUrlParam(val: any) {
+    const txt = typeof val === "object" ? JSON.stringify(val) : val;
+    const b64 = Buffer.from(txt).toString("base64");
+    const data = encodeURIComponent(btoa(b64));
+
+    return data;
+  },
+
+  deCvUrlParam(val: any) {
+    const data = Buffer.from(atob(decodeURIComponent(val)), "base64").toString(
+      "utf8",
+    );
+    return data;
   },
 };

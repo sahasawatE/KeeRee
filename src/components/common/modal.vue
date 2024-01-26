@@ -70,6 +70,7 @@
 </template>
 
 <script lang="ts">
+import { useDisplay } from "vuetify";
 type ModalSize = "sm" | "md" | "lg" | "xl" | "full";
 export default defineNuxtComponent({
   props: {
@@ -128,7 +129,8 @@ export default defineNuxtComponent({
       return this.$props.active;
     },
     isMobile() {
-      return this.$vuetify.display.mobile;
+      const { mobile } = useDisplay();
+      return mobile.value;
     },
     modalWidth() {
       const size = this.isMobile ? "full" : this.$props.size;

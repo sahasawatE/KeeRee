@@ -70,6 +70,7 @@
 </template>
 
 <script lang="ts">
+import { useDisplay } from "vuetify";
 import type { PropType } from "vue";
 
 type ReceiveMenuItem = {
@@ -136,7 +137,8 @@ export default defineNuxtComponent({
       },
     },
     isMobile() {
-      return this.$vuetify.display.mobile;
+      const { mobile } = useDisplay();
+      return mobile.value;
     },
     canSelect() {
       if (this.model) {

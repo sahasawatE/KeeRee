@@ -7,6 +7,8 @@
         v-for="(menu, i) in menus"
         :key="i"
         class="main-menu"
+        rounded="lg"
+        border
         append-icon="mdi-chevron-right"
         @click="handleClickMenu(menu.to)"
       >

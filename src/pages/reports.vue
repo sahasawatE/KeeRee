@@ -64,66 +64,34 @@
         </v-card-text>
       </v-card>
     </v-expand-transition>
-    <v-card color="grey-lighten-2" variant="outlined">
-      <v-card-text class="text-black d-flex flex-column align-center t-gap-3">
-        <div class="d-flex flex-row justify-center align-center t-gap-4">
-          <span>สรุปยอดขายไข่ไก่</span>
-          <v-btn
-            icon="mdi-export-variant"
-            variant="tonal"
-            color="grey-darken-1"
-            slim
-            size="32"
-          ></v-btn>
-        </div>
-        <span class="text-center text-grey-darken-1">{{ displayDate }}</span>
-        <span class="t-text-2xl t-font-bold">฿ {{ accounting_sum.sum }}</span>
-        <div class="d-flex flex-row t-gap-3">
-          <v-btn stacked variant="plain" color="black">
-            <div class="d-flex flex-row justify-center align-center pb-1">
-              <span>รายรับ</span>
-              <v-icon>mdi-chevron-right</v-icon>
-            </div>
-            <span class="t-font-bold t-text-[1rem]">
-              ฿ {{ accounting_sum.receive }}
-            </span>
-          </v-btn>
-          <v-divider
-            vertical
-            thickness="1"
-            color="grey-darken-4"
-            style="opacity: 1 !important"
-          ></v-divider>
-          <v-btn stacked variant="plain" color="black">
-            <div class="d-flex flex-row justify-center align-center pb-1">
-              <span>รายจ่าย</span>
-              <v-icon>mdi-chevron-right</v-icon>
-            </div>
-            <span class="t-font-bold t-text-[1rem]">
-              ฿ {{ accounting_sum.expense }}
-            </span>
-          </v-btn>
-        </div>
-      </v-card-text>
-    </v-card>
-    <bar-chart :chart-data="chart_data" />
+    <reports-summary-card
+      :display-date="displayDate"
+      :accounting-sum="accounting_sum"
+      @to="toGoAccountingDetails"
+    />
+    <nuxt-page
+      :page-key="(route: any) => route.fullPath"
+      :chart-options="chart_options"
+      :filtered-data="acc_filtered_data"
+    />
   </div>
 </template>
 
 <script lang="ts">
-import { BarChart } from "vue-chart-3";
-import { Chart, registerables } from "chart.js";
-
 import type { Moment } from "moment";
 import moment from "moment-with-locales-es6";
+
 import { useStore } from "~/stores";
 
 import type { Response } from "~/types/query.type";
 import type { ResponseAcc } from "~/types/accounting.type";
 
-Chart.register(...registerables);
-
 type SelectDataRange = "0" | "1" | "2" | "3";
+type ChartOptions = {
+  labels: string[];
+  receive: number[];
+  expense: number[];
+};
 
 export default defineNuxtComponent({
   setup() {
@@ -132,21 +100,7 @@ export default defineNuxtComponent({
       middleware: "auth",
     });
 
-    const chart_data = ref({
-      labels: [] as string[],
-      datasets: [
-        {
-          label: "รายรับ",
-          data: [] as number[],
-          backgroundColor: ["#21C306"],
-        },
-        {
-          label: "รายจ่าย",
-          data: [] as number[],
-          backgroundColor: ["#B23F3F"],
-        },
-      ],
-    });
+    const store = useStore();
 
     const date_range = ref<SelectDataRange>("0");
 
@@ -161,27 +115,35 @@ export default defineNuxtComponent({
       receive: 0,
     });
 
-    const acc_data = ref<Response[]>([]);
+    const chart_options = ref<ChartOptions>({
+      expense: [],
+      receive: [],
+      labels: [],
+    });
 
-    const store = useStore();
+    const acc_data = ref<Response[]>([]);
+    const acc_filtered_data = ref<Response[]>([]);
 
     return {
       store,
       date_range,
       date,
-      chart_data,
       acc_data,
       accounting_sum,
+      chart_options,
+      acc_filtered_data,
     };
-  },
-  components: {
-    BarChart,
   },
   async mounted() {
     try {
       this.store.setMenuTitle("รายงานการขาย");
       const acc_data = await this.$query.get("accounting");
       this.acc_data = acc_data;
+
+      const sum_eggs = await this.$query.get("eggs_sum");
+      const collect_eggs = await this.$query.get("collect-egg");
+      const food = await this.$query.get("food");
+      console.log(collect_eggs, sum_eggs, food);
 
       this.filterAcc();
     } catch (err) {
@@ -215,15 +177,22 @@ export default defineNuxtComponent({
       }
     },
     dateRange(): Moment[] {
+      const today = moment().format("DD/MM/YYYY");
       switch (this.date_range) {
         case "0":
-          return [moment(), moment()];
+          return [moment(today, "DD/MM/YYYY"), moment(today, "DD/MM/YYYY")];
 
         case "1":
-          return [moment().subtract(7, "d"), moment()];
+          return [
+            moment(today, "DD/MM/YYYY").subtract(7, "d"),
+            moment(today, "DD/MM/YYYY"),
+          ];
 
         case "2":
-          return [moment().subtract(30, "d"), moment()];
+          return [
+            moment(today, "DD/MM/YYYY").subtract(30, "d"),
+            moment(today, "DD/MM/YYYY"),
+          ];
 
         case "3":
           return [
@@ -243,13 +212,16 @@ export default defineNuxtComponent({
     },
   },
   methods: {
+    sumCollectEggs() {},
     filterAcc() {
       const filter_data = this.acc_data.filter((e) => {
         const date = moment(e.data.date, "DD/MM/YYYY") as Moment;
         const [start, end] = this.dateRange;
 
-        return date.isBetween(start, end, null, "[]");
+        return date.isBetween(start, end, undefined, "[]");
       });
+      this.acc_filtered_data = filter_data;
+
       this.sumAcc(filter_data);
     },
     sumAcc(data: { data: ResponseAcc; id: string }[]) {
@@ -271,9 +243,12 @@ export default defineNuxtComponent({
       this.createDataSet(dates, expense, receive);
     },
     createDataSet(dates: string[], expense: number[], receive: number[]) {
-      this.chart_data.labels = dates;
-      this.chart_data.datasets[0].data = receive;
-      this.chart_data.datasets[1].data = expense;
+      this.chart_options.expense = expense;
+      this.chart_options.receive = receive;
+      this.chart_options.labels = dates;
+    },
+    toGoAccountingDetails(path: string) {
+      this.$router.push(path);
     },
   },
   watch: {

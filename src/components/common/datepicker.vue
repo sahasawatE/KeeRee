@@ -72,6 +72,7 @@
 </template>
 
 <script lang="ts">
+import { useDisplay } from "vuetify";
 // import type { PropType } from "vue";
 import moment from "moment";
 
@@ -127,7 +128,8 @@ export default defineNuxtComponent({
   },
   computed: {
     isMobile() {
-      return this.$vuetify.display.mobile;
+      const { mobile } = useDisplay();
+      return mobile.value;
     },
     displayDate: {
       get() {

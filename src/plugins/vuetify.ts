@@ -94,9 +94,12 @@ export default defineNuxtPlugin((app) => {
         bgColor: "white",
       },
       VListItem: {
-        rounded: "lg",
-        border: true,
         class: ["py-4 px-6"],
+      },
+      VDivider: {
+        thickness: "1",
+        color: "grey-darken-4",
+        style: "opacity: 1 !important",
       },
       // VSheet: {
       //   color: "white",
