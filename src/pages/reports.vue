@@ -131,8 +131,8 @@ export default defineNuxtComponent({
     const sum_eggs = ref<Response[]>([]);
     const collect_eggs = ref<Response[]>([]);
     const food = ref<Response[]>([]);
-    const sum_eggs_sum = ref<number[][]>([]);
 
+    const sum_eggs_sum = ref<number[][]>([]);
     const weight_sum = ref(0);
     const food_sum = ref({
       row: {
@@ -338,7 +338,8 @@ export default defineNuxtComponent({
       this.$router.push(path);
     },
     handleExportReports() {
-      console.log("export");
+      const result = this.$csv.export();
+      console.log(result);
     },
   },
   watch: {
