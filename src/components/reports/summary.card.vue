@@ -12,6 +12,7 @@
           color="grey-darken-1"
           slim
           size="32"
+          @click="$emit('export')"
         ></v-btn>
       </div>
       <span class="text-center text-grey-darken-1">
@@ -24,7 +25,7 @@
         <v-btn
           stacked
           variant="plain"
-          color="black"
+          color="#21C306"
           @click="$emit('to', '/reports/receive')"
         >
           <div class="d-flex flex-row justify-center align-center pb-1">
@@ -39,7 +40,7 @@
         <v-btn
           stacked
           variant="plain"
-          color="black"
+          color="#B23F3F"
           @click="$emit('to', '/reports/expense')"
         >
           <div class="d-flex flex-row justify-center align-center pb-1">
@@ -99,6 +100,7 @@ export default defineNuxtComponent({
   },
   emits: {
     to: null,
+    export: null,
   },
   computed: {
     routeName() {

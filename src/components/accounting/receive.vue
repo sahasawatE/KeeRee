@@ -20,8 +20,10 @@
               value: table.data[index].value,
             }"
             :items="menu_items"
-            @update:other="(e) => handleOtherChange(index, e)"
-            @update:model-value="(e) => handleTableTitleChange(e, index)"
+            @update:other="(e: string) => handleOtherChange(index, e)"
+            @update:model-value="
+              (e: MenuItem) => handleTableTitleChange(e, index)
+            "
             @close="handleBottomSheet"
           >
             <template #activator="{ props }">

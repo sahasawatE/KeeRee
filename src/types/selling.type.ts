@@ -6,7 +6,7 @@ type SellingSchema = {
 type SumSchema = {
   sum_sell: number[];
   sum_collect: number[];
-  form_yesterday: number[];
+  from_yesterday: number[];
   redord_date: string;
 };
 

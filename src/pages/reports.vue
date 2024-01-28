@@ -68,11 +68,15 @@
       :display-date="displayDate"
       :accounting-sum="accounting_sum"
       @to="toGoAccountingDetails"
+      @export="handleExportReports"
     />
     <nuxt-page
       :page-key="(route: any) => route.fullPath"
       :chart-options="chart_options"
       :filtered-data="acc_filtered_data"
+      :weight-sum="weight_sum"
+      :food-sum="food_sum"
+      :sum-eggs="sum_eggs_sum"
     />
   </div>
 </template>
@@ -85,6 +89,7 @@ import { useStore } from "~/stores";
 
 import type { Response } from "~/types/query.type";
 import type { ResponseAcc } from "~/types/accounting.type";
+import type { SumSchema } from "~/types/selling.type";
 
 type SelectDataRange = "0" | "1" | "2" | "3";
 type ChartOptions = {
@@ -123,6 +128,21 @@ export default defineNuxtComponent({
 
     const acc_data = ref<Response[]>([]);
     const acc_filtered_data = ref<Response[]>([]);
+    const sum_eggs = ref<Response[]>([]);
+    const collect_eggs = ref<Response[]>([]);
+    const food = ref<Response[]>([]);
+    const sum_eggs_sum = ref<number[][]>([]);
+
+    const weight_sum = ref(0);
+    const food_sum = ref({
+      row: {
+        A: 0,
+        B: 0,
+        C: 0,
+        D: 0,
+      },
+      sum: 0,
+    });
 
     return {
       store,
@@ -132,22 +152,38 @@ export default defineNuxtComponent({
       accounting_sum,
       chart_options,
       acc_filtered_data,
+      sum_eggs,
+      collect_eggs,
+      food,
+      weight_sum,
+      food_sum,
+      sum_eggs_sum,
     };
   },
   async mounted() {
+    this.store.setLoading(true);
     try {
       this.store.setMenuTitle("รายงานการขาย");
       const acc_data = await this.$query.get("accounting");
       this.acc_data = acc_data;
 
       const sum_eggs = await this.$query.get("eggs_sum");
+      this.sum_eggs = sum_eggs;
+
       const collect_eggs = await this.$query.get("collect-egg");
+      this.collect_eggs = collect_eggs;
+
       const food = await this.$query.get("food");
-      console.log(collect_eggs, sum_eggs, food);
+      this.food = food;
 
       this.filterAcc();
+      this.filterFood();
+      this.filterSumEggs();
+      this.filterCollectEggss();
     } catch (err) {
       this.$dialog.toast.error(err as string);
+    } finally {
+      this.store.setLoading(false);
     }
   },
   computed: {
@@ -212,26 +248,77 @@ export default defineNuxtComponent({
     },
   },
   methods: {
-    sumCollectEggs() {},
-    filterAcc() {
-      const filter_data = this.acc_data.filter((e) => {
-        const date = moment(e.data.date, "DD/MM/YYYY") as Moment;
+    filtering(data: Response[], date_key: string) {
+      const filter_data = data.filter((e) => {
+        const date = moment(e.data[date_key], "DD/MM/YYYY") as Moment;
         const [start, end] = this.dateRange;
 
         return date.isBetween(start, end, undefined, "[]");
       });
+
+      return filter_data;
+    },
+    filterSumEggs() {
+      const filter_data = this.filtering(this.sum_eggs, "record_date");
+      const data = filter_data.map((e) => e.data) as SumSchema[];
+      const sum_data = data.map((e) => [
+        utils.sum([e.from_yesterday[0], e.sum_collect[0], -e.sum_sell[0]]),
+        utils.sum([e.from_yesterday[1], e.sum_collect[1], -e.sum_sell[1]]),
+        utils.sum([e.from_yesterday[2], e.sum_collect[2], -e.sum_sell[2]]),
+        utils.sum([e.from_yesterday[3], e.sum_collect[3], -e.sum_sell[3]]),
+        utils.sum([e.from_yesterday[4], e.sum_collect[4], -e.sum_sell[4]]),
+      ]);
+      this.sum_eggs_sum = sum_data;
+    },
+    filterCollectEggss() {
+      const filter_data = this.filtering(this.collect_eggs, "date");
+      this.weight_sum = utils.sum(filter_data.map((e) => e.data.weight_sum));
+    },
+    filterFood() {
+      const filter_data = this.filtering(this.food, "date");
+      const a: number[] = [];
+      const b: number[] = [];
+      const c: number[] = [];
+      const d: number[] = [];
+      filter_data.forEach((e) => {
+        a.push(e.data.weight.a);
+        b.push(e.data.weight.b);
+        c.push(e.data.weight.c);
+        d.push(e.data.weight.d);
+      });
+
+      this.food_sum.row.A = utils.sum(a);
+      this.food_sum.row.B = utils.sum(b);
+      this.food_sum.row.C = utils.sum(c);
+      this.food_sum.row.D = utils.sum(d);
+
+      this.food_sum.sum = utils.sum([
+        this.food_sum.row.A,
+        this.food_sum.row.B,
+        this.food_sum.row.C,
+        this.food_sum.row.D,
+      ]);
+    },
+    filterAcc() {
+      const filter_data = this.filtering(this.acc_data, "date");
       this.acc_filtered_data = filter_data;
 
       this.sumAcc(filter_data);
     },
     sumAcc(data: { data: ResponseAcc; id: string }[]) {
-      const expense = data.map((e) =>
+      const sorted = data.sort((a, b) => {
+        return (
+          moment(b.data.date, "DD/MM/YYYY").toDate() -
+          moment(a.data.date, "DD/MM/YYYY").toDate()
+        );
+      });
+      const expense = sorted.map((e) =>
         utils.sum(e.data.expense.map((ex) => ex.price)),
       );
-      const receive = data.map((e) =>
+      const receive = sorted.map((e) =>
         utils.sum(e.data.receive.map((re) => re.price)),
       );
-      const dates = data.map((e) => e.data.date);
+      const dates = sorted.map((e) => e.data.date);
 
       this.accounting_sum.expense = utils.sum(expense);
       this.accounting_sum.receive = utils.sum(receive);
@@ -250,6 +337,9 @@ export default defineNuxtComponent({
     toGoAccountingDetails(path: string) {
       this.$router.push(path);
     },
+    handleExportReports() {
+      console.log("export");
+    },
   },
   watch: {
     date_range(val: SelectDataRange) {
@@ -257,6 +347,9 @@ export default defineNuxtComponent({
         this.date.start = "";
         this.date.end = "";
         this.filterAcc();
+        this.filterFood();
+        this.filterSumEggs();
+        this.filterCollectEggss();
       }
     },
     date: {
@@ -264,6 +357,9 @@ export default defineNuxtComponent({
       handler(date: { start: string; end: string }) {
         if (date.start && date.end) {
           this.filterAcc();
+          this.filterFood();
+          this.filterSumEggs();
+          this.filterCollectEggss();
         }
       },
     },

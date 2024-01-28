@@ -104,17 +104,6 @@ export default defineNuxtComponent({
         } else {
           this.editing = false;
           this.edit_id = "";
-          // const date = moment().format("DD/MM/YYYY");
-          // await this.$query.post("accounting", {
-          //   date,
-          //   expense: [],
-          //   receive: [],
-          // });
-          // const [res] = await this.$query.get("accounting", "date", "==", date);
-          // const { data, id } = res;
-          // this.edit_data = data as EditDataRes;
-          // this.edit_id = id;
-          // this.editing = false;
         }
       } catch (err) {
         this.$dialog.toast.error(err as string);
