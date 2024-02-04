@@ -82,7 +82,7 @@
 </template>
 
 <script lang="ts">
-import * as XLSX from "xlsx";
+import * as XLSX from "xlsx/xlsx.mjs";
 import type { Moment } from "moment";
 import moment from "moment-with-locales-es6";
 
