@@ -412,7 +412,7 @@ export default defineNuxtPlugin(() => {
           )
         : "",
       "ขายไข่เบอร์ 0 (บาท)": e.selling ? String(e.selling.eggs[0].price) : "",
-      "ขายไข่เบอร์ 0 (แผง)": e.selling ? String(e.selling.eggs[0].amount) : "'",
+      "ขายไข่เบอร์ 0 (แผง)": e.selling ? String(e.selling.eggs[0].amount) : "",
       "ไข่เบอร์ 0 คงเหลือ (แผง)": e.sum_eggs
         ? calGroup(
             utils.sum([
