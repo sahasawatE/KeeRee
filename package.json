@@ -39,6 +39,7 @@
     "pinia": "^2.1.7",
     "vue-chart-3": "^3.1.8",
     "vuefire": "^3.1.19",
-    "vuetify-sonner": "^0.3.12"
+    "vuetify-sonner": "^0.3.12",
+    "xlsx": "^0.18.5"
   }
 }

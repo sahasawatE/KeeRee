@@ -141,7 +141,7 @@ export default defineNuxtComponent({
     };
 
     const menu_items: MenuItem[] = [
-      { value: "1", title: "อาหารไก่ไข" },
+      { value: "1", title: "อาหารไก่ไข่" },
       { value: "2", title: "ค่าขนส่งอาหารไก่ไข่" },
       { value: "3", title: "แกลบรองพื้นขี้ไก่ไข่" },
       { value: "4", title: "ไก่ไข่" },

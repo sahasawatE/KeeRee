@@ -82,6 +82,7 @@
 </template>
 
 <script lang="ts">
+import * as XLSX from "xlsx";
 import type { Moment } from "moment";
 import moment from "moment-with-locales-es6";
 
@@ -126,11 +127,13 @@ export default defineNuxtComponent({
       labels: [],
     });
 
-    const acc_data = ref<Response[]>([]);
     const acc_filtered_data = ref<Response[]>([]);
+
+    const acc_data = ref<Response[]>([]);
     const sum_eggs = ref<Response[]>([]);
     const collect_eggs = ref<Response[]>([]);
     const food = ref<Response[]>([]);
+    const selling = ref<Response[]>([]);
 
     const sum_eggs_sum = ref<number[][]>([]);
     const weight_sum = ref(0);
@@ -158,6 +161,7 @@ export default defineNuxtComponent({
       weight_sum,
       food_sum,
       sum_eggs_sum,
+      selling,
     };
   },
   async mounted() {
@@ -175,6 +179,9 @@ export default defineNuxtComponent({
 
       const food = await this.$query.get("food");
       this.food = food;
+
+      const selling = await this.$query.get("selling");
+      this.selling = selling;
 
       this.filterAcc();
       this.filterFood();
@@ -338,8 +345,52 @@ export default defineNuxtComponent({
       this.$router.push(path);
     },
     handleExportReports() {
-      const result = this.$csv.export();
-      console.log(result);
+      const { sheet_name, data } = this.$csv.export(
+        this.acc_data,
+        this.sum_eggs,
+        this.collect_eggs,
+        this.food,
+        this.selling,
+        this.dateRange,
+      );
+
+      // create heading
+      const collect_heading = [Object.keys(data.collect_eggs_csv[0])];
+      const sell_heading = [Object.keys(data.sell_eggs_csv[0])];
+      const acc_heading = [Object.keys(data.accounting_csv[0])];
+
+      // new work book
+      const wb = XLSX.utils.book_new();
+
+      // create coolect sheet
+      const ws1: XLSX.WorkSheet = XLSX.utils.json_to_sheet([]);
+      XLSX.utils.sheet_add_aoa(ws1, collect_heading);
+      XLSX.utils.sheet_add_json(ws1, data.collect_eggs_csv, {
+        origin: "A2",
+        skipHeader: true,
+      });
+      XLSX.utils.book_append_sheet(wb, ws1, sheet_name[0]);
+
+      // create sell sheet
+      const ws2: XLSX.WorkSheet = XLSX.utils.json_to_sheet([]);
+      XLSX.utils.sheet_add_aoa(ws2, sell_heading);
+      XLSX.utils.sheet_add_json(ws2, data.sell_eggs_csv, {
+        origin: "A2",
+        skipHeader: true,
+      });
+      XLSX.utils.book_append_sheet(wb, ws2, sheet_name[1]);
+
+      // create accounting sheet
+      const ws3: XLSX.WorkSheet = XLSX.utils.json_to_sheet([]);
+      XLSX.utils.sheet_add_aoa(ws3, acc_heading);
+      XLSX.utils.sheet_add_json(ws3, data.accounting_csv, {
+        origin: "A2",
+        skipHeader: true,
+      });
+      XLSX.utils.book_append_sheet(wb, ws3, sheet_name[2]);
+
+      // export work book
+      XLSX.writeFile(wb, `รายงานฟาร์มไก่ (${moment().format("ll")}).xlsx`);
     },
   },
   watch: {
