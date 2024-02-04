@@ -133,155 +133,197 @@ export default defineNuxtPlugin(() => {
     return {
       ...createHeader().collectEggs,
       "วัน เดือน ปี": e.date,
-      "จำนวนไข่เบอร์ 0 (แผง)": calGroup(e.collect_eggs?.egg_number[0] || 0),
-      "จำนวนไข่เบอร์ 0 สะสม (แผง)": calGroup(
-        utils.sum([
-          e.sum_eggs?.from_yesterday[0] || 0,
-          e.sum_eggs?.sum_collect[0] || 0,
-          -(e.sum_eggs?.sum_sell[0] || 0),
-        ]),
-      ),
-      "จำนวนไข่เบอร์ 1 (แผง)": calGroup(e.collect_eggs?.egg_number[1] || 0),
-      "จำนวนไข่เบอร์ 1 สะสม (แผง)": calGroup(
-        utils.sum([
-          e.sum_eggs?.from_yesterday[1] || 0,
-          e.sum_eggs?.sum_collect[1] || 0,
-          -(e.sum_eggs?.sum_sell[1] || 0),
-        ]),
-      ),
-      "จำนวนไข่เบอร์ 2 (แผง)": calGroup(e.collect_eggs?.egg_number[2] || 0),
-      "จำนวนไข่เบอร์ 2 สะสม (แผง)": calGroup(
-        utils.sum([
-          e.sum_eggs?.from_yesterday[2] || 0,
-          e.sum_eggs?.sum_collect[2] || 0,
-          -(e.sum_eggs?.sum_sell[2] || 0),
-        ]),
-      ),
-      "จำนวนไข่เบอร์ 3 (แผง)": calGroup(e.collect_eggs?.egg_number[3] || 0),
-      "จำนวนไข่เบอร์ 3 สะสม (แผง)": calGroup(
-        utils.sum([
-          e.sum_eggs?.from_yesterday[3] || 0,
-          e.sum_eggs?.sum_collect[3] || 0,
-          -(e.sum_eggs?.sum_sell[3] || 0),
-        ]),
-      ),
-      "จำนวนไข่เบอร์ 4 (แผง)": calGroup(e.collect_eggs?.egg_number[4] || 0),
-      "จำนวนไข่เบอร์ 4 สะสม (แผง)": calGroup(
-        utils.sum([
-          e.sum_eggs?.from_yesterday[4] || 0,
-          e.sum_eggs?.sum_collect[4] || 0,
-          -(e.sum_eggs?.sum_sell[4] || 0),
-        ]),
-      ),
-      "จำนวนไข่แถว A (ฟอง)": String(e.collect_eggs?.amount.a || 0),
-      "จำนวนไข่แถว B (ฟอง)": String(e.collect_eggs?.amount.b || 0),
-      "จำนวนไข่แถว C (ฟอง)": String(e.collect_eggs?.amount.c || 0),
-      "จำนวนไข่แถว D (ฟอง)": String(e.collect_eggs?.amount.d || 0),
-      "น้ำหนักอาหารแถว A (กก.)": toKg(e.food?.weight.a || 0),
-      "น้ำหนักอาหารแถว B (กก.)": toKg(e.food?.weight.b || 0),
-      "น้ำหนักอาหารแถว C (กก.)": toKg(e.food?.weight.c || 0),
-      "น้ำหนักอาหารแถว D (กก.)": toKg(e.food?.weight.d || 0),
-      "น้ำหนักอาหารรวม (กก.)": toKg(
-        utils.sum([
-          e.food?.weight.a || 0,
-          e.food?.weight.b || 0,
-          e.food?.weight.c || 0,
-          e.food?.weight.d || 0,
-        ]),
-      ),
-      "น้ำหนักไข่รวม (กรัม)": String(e.collect_eggs?.weight_sum || 0),
-      "น้ำหนักไข่เฉลี่ยต่อฟอง (กรัม)": String(e.collect_eggs?.weight_avg || 0),
-      "จำนวนไข่คงเหลือ (ฟอง)": String(
-        utils.sum([
-          e.sum_eggs?.from_yesterday[0] || 0,
-          e.sum_eggs?.sum_collect[0] || 0,
-          -(e.sum_eggs?.sum_sell[0] || 0),
-          e.sum_eggs?.from_yesterday[1] || 0,
-          e.sum_eggs?.sum_collect[1] || 0,
-          -(e.sum_eggs?.sum_sell[1] || 0),
-          e.sum_eggs?.from_yesterday[2] || 0,
-          e.sum_eggs?.sum_collect[2] || 0,
-          -(e.sum_eggs?.sum_sell[2] || 0),
-          e.sum_eggs?.from_yesterday[3] || 0,
-          e.sum_eggs?.sum_collect[3] || 0,
-          -(e.sum_eggs?.sum_sell[3] || 0),
-          e.sum_eggs?.from_yesterday[4] || 0,
-          e.sum_eggs?.sum_collect[4] || 0,
-          -(e.sum_eggs?.sum_sell[4] || 0),
-        ]),
-      ),
-      "จำนวนไข่รวม (ฟอง)": String(
-        utils.sum([
-          e.sum_eggs?.from_yesterday[0] || 0,
-          e.sum_eggs?.sum_collect[0] || 0,
-          e.sum_eggs?.from_yesterday[1] || 0,
-          e.sum_eggs?.sum_collect[1] || 0,
-          e.sum_eggs?.from_yesterday[2] || 0,
-          e.sum_eggs?.sum_collect[2] || 0,
-          e.sum_eggs?.from_yesterday[3] || 0,
-          e.sum_eggs?.sum_collect[3] || 0,
-          e.sum_eggs?.from_yesterday[4] || 0,
-          e.sum_eggs?.sum_collect[4] || 0,
-        ]),
-      ),
-      "จำนวนไข่รวม (แผง)": String(
-        utils.sum([
-          Number(calGroup(e.collect_eggs?.egg_number[0] || 0)),
-          Number(calGroup(e.collect_eggs?.egg_number[1] || 0)),
-          Number(calGroup(e.collect_eggs?.egg_number[2] || 0)),
-          Number(calGroup(e.collect_eggs?.egg_number[3] || 0)),
-          Number(calGroup(e.collect_eggs?.egg_number[4] || 0)),
-        ]),
-      ),
-      "จำนวนไข่สะสม (แผง)": String(
-        utils.sum([
-          Number(
-            calGroup(
-              utils.sum([
-                e.sum_eggs?.from_yesterday[0] || 0,
-                e.sum_eggs?.sum_collect[0] || 0,
-                -(e.sum_eggs?.sum_sell[0] || 0),
-              ]),
-            ),
-          ),
-          Number(
-            calGroup(
-              utils.sum([
-                e.sum_eggs?.from_yesterday[1] || 0,
-                e.sum_eggs?.sum_collect[1] || 0,
-                -(e.sum_eggs?.sum_sell[1] || 0),
-              ]),
-            ),
-          ),
-          Number(
-            calGroup(
-              utils.sum([
-                e.sum_eggs?.from_yesterday[2] || 0,
-                e.sum_eggs?.sum_collect[2] || 0,
-                -(e.sum_eggs?.sum_sell[2] || 0),
-              ]),
-            ),
-          ),
-          Number(
-            calGroup(
-              utils.sum([
-                e.sum_eggs?.from_yesterday[3] || 0,
-                e.sum_eggs?.sum_collect[3] || 0,
-                -(e.sum_eggs?.sum_sell[3] || 0),
-              ]),
-            ),
-          ),
-          Number(
-            calGroup(
-              utils.sum([
-                e.sum_eggs?.from_yesterday[4] || 0,
-                e.sum_eggs?.sum_collect[4] || 0,
-                -(e.sum_eggs?.sum_sell[4] || 0),
-              ]),
-            ),
-          ),
-        ]),
-      ),
+      "จำนวนไข่เบอร์ 0 (แผง)": e.collect_eggs
+        ? calGroup(e.collect_eggs.egg_number[0])
+        : "",
+      "จำนวนไข่เบอร์ 0 สะสม (แผง)": e.sum_eggs
+        ? calGroup(
+            utils.sum([
+              e.sum_eggs.from_yesterday[0],
+              e.sum_eggs.sum_collect[0],
+              -e.sum_eggs.sum_sell[0],
+            ]),
+          )
+        : "",
+      "จำนวนไข่เบอร์ 1 (แผง)": e.collect_eggs
+        ? calGroup(e.collect_eggs.egg_number[1])
+        : "",
+      "จำนวนไข่เบอร์ 1 สะสม (แผง)": e.sum_eggs
+        ? calGroup(
+            utils.sum([
+              e.sum_eggs.from_yesterday[1],
+              e.sum_eggs.sum_collect[1],
+              -e.sum_eggs.sum_sell[1],
+            ]),
+          )
+        : "",
+      "จำนวนไข่เบอร์ 2 (แผง)": e.collect_eggs
+        ? calGroup(e.collect_eggs.egg_number[2])
+        : "",
+      "จำนวนไข่เบอร์ 2 สะสม (แผง)": e.sum_eggs
+        ? calGroup(
+            utils.sum([
+              e.sum_eggs.from_yesterday[2],
+              e.sum_eggs.sum_collect[2],
+              -e.sum_eggs.sum_sell[2],
+            ]),
+          )
+        : "",
+      "จำนวนไข่เบอร์ 3 (แผง)": e.collect_eggs
+        ? calGroup(e.collect_eggs.egg_number[3])
+        : "",
+      "จำนวนไข่เบอร์ 3 สะสม (แผง)": e.sum_eggs
+        ? calGroup(
+            utils.sum([
+              e.sum_eggs.from_yesterday[3],
+              e.sum_eggs.sum_collect[3],
+              -e.sum_eggs.sum_sell[3],
+            ]),
+          )
+        : "",
+      "จำนวนไข่เบอร์ 4 (แผง)": e.collect_eggs
+        ? calGroup(e.collect_eggs.egg_number[4])
+        : "",
+      "จำนวนไข่เบอร์ 4 สะสม (แผง)": e.sum_eggs
+        ? calGroup(
+            utils.sum([
+              e.sum_eggs.from_yesterday[4],
+              e.sum_eggs.sum_collect[4],
+              -e.sum_eggs.sum_sell[4],
+            ]),
+          )
+        : "",
+      "จำนวนไข่แถว A (ฟอง)": e.collect_eggs
+        ? String(e.collect_eggs.amount.a)
+        : "",
+      "จำนวนไข่แถว B (ฟอง)": e.collect_eggs
+        ? String(e.collect_eggs.amount.b)
+        : "",
+      "จำนวนไข่แถว C (ฟอง)": e.collect_eggs
+        ? String(e.collect_eggs.amount.c)
+        : "",
+      "จำนวนไข่แถว D (ฟอง)": e.collect_eggs
+        ? String(e.collect_eggs.amount.d)
+        : "",
+      "น้ำหนักอาหารแถว A (กก.)": e.food ? toKg(e.food.weight.a) : "",
+      "น้ำหนักอาหารแถว B (กก.)": e.food ? toKg(e.food.weight.b) : "",
+      "น้ำหนักอาหารแถว C (กก.)": e.food ? toKg(e.food.weight.c) : "",
+      "น้ำหนักอาหารแถว D (กก.)": e.food ? toKg(e.food.weight.d) : "",
+      "น้ำหนักอาหารรวม (กก.)": e.food
+        ? toKg(
+            utils.sum([
+              e.food.weight.a,
+              e.food.weight.b,
+              e.food.weight.c,
+              e.food.weight.d,
+            ]),
+          )
+        : "",
+      "น้ำหนักไข่รวม (กรัม)": e.collect_eggs
+        ? String(e.collect_eggs.weight_sum)
+        : "",
+      "น้ำหนักไข่เฉลี่ยต่อฟอง (กรัม)": e.collect_eggs
+        ? String(e.collect_eggs.weight_avg)
+        : "",
+      "จำนวนไข่คงเหลือ (ฟอง)": e.sum_eggs
+        ? String(
+            utils.sum([
+              e.sum_eggs.from_yesterday[0],
+              e.sum_eggs.sum_collect[0],
+              -e.sum_eggs.sum_sell[0],
+              e.sum_eggs.from_yesterday[1],
+              e.sum_eggs.sum_collect[1],
+              -e.sum_eggs.sum_sell[1],
+              e.sum_eggs.from_yesterday[2],
+              e.sum_eggs.sum_collect[2],
+              -e.sum_eggs.sum_sell[2],
+              e.sum_eggs.from_yesterday[3],
+              e.sum_eggs.sum_collect[3],
+              -e.sum_eggs.sum_sell[3],
+              e.sum_eggs.from_yesterday[4],
+              e.sum_eggs.sum_collect[4],
+              -e.sum_eggs.sum_sell[4],
+            ]),
+          )
+        : "",
+      "จำนวนไข่รวม (ฟอง)": e.sum_eggs
+        ? String(
+            utils.sum([
+              e.sum_eggs.from_yesterday[0],
+              e.sum_eggs.sum_collect[0],
+              e.sum_eggs.from_yesterday[1],
+              e.sum_eggs.sum_collect[1],
+              e.sum_eggs.from_yesterday[2],
+              e.sum_eggs.sum_collect[2],
+              e.sum_eggs.from_yesterday[3],
+              e.sum_eggs.sum_collect[3],
+              e.sum_eggs.from_yesterday[4],
+              e.sum_eggs.sum_collect[4],
+            ]),
+          )
+        : "",
+      "จำนวนไข่รวม (แผง)": e.collect_eggs
+        ? String(
+            utils.sum([
+              Number(calGroup(e.collect_eggs.egg_number[0])),
+              Number(calGroup(e.collect_eggs.egg_number[1])),
+              Number(calGroup(e.collect_eggs.egg_number[2])),
+              Number(calGroup(e.collect_eggs.egg_number[3])),
+              Number(calGroup(e.collect_eggs.egg_number[4])),
+            ]),
+          )
+        : "",
+      "จำนวนไข่สะสม (แผง)": e.sum_eggs
+        ? String(
+            utils.sum([
+              Number(
+                calGroup(
+                  utils.sum([
+                    e.sum_eggs.from_yesterday[0],
+                    e.sum_eggs.sum_collect[0],
+                    -e.sum_eggs.sum_sell[0],
+                  ]),
+                ),
+              ),
+              Number(
+                calGroup(
+                  utils.sum([
+                    e.sum_eggs.from_yesterday[1],
+                    e.sum_eggs.sum_collect[1],
+                    -e.sum_eggs.sum_sell[1],
+                  ]),
+                ),
+              ),
+              Number(
+                calGroup(
+                  utils.sum([
+                    e.sum_eggs.from_yesterday[2],
+                    e.sum_eggs.sum_collect[2],
+                    -e.sum_eggs.sum_sell[2],
+                  ]),
+                ),
+              ),
+              Number(
+                calGroup(
+                  utils.sum([
+                    e.sum_eggs.from_yesterday[3],
+                    e.sum_eggs.sum_collect[3],
+                    -e.sum_eggs.sum_sell[3],
+                  ]),
+                ),
+              ),
+              Number(
+                calGroup(
+                  utils.sum([
+                    e.sum_eggs.from_yesterday[4],
+                    e.sum_eggs.sum_collect[4],
+                    -e.sum_eggs.sum_sell[4],
+                  ]),
+                ),
+              ),
+            ]),
+          )
+        : "",
     };
   }
 
@@ -296,118 +338,134 @@ export default defineNuxtPlugin(() => {
     return {
       ...createHeader().sellEggs,
       "วัน เดือน ปี": e.date,
-      "ขายไข่ทั้งหมด (บาท)": String(
-        utils.sum([
-          e.selling?.eggs[0].price || 0,
-          e.selling?.eggs[1].price || 0,
-          e.selling?.eggs[2].price || 0,
-          e.selling?.eggs[3].price || 0,
-          e.selling?.eggs[4].price || 0,
-        ]),
-      ),
-      "ขายไข่ทั้งหมด (แผง)": String(
-        utils.sum([
-          e.selling?.eggs[0].amount || 0,
-          e.selling?.eggs[1].amount || 0,
-          e.selling?.eggs[2].amount || 0,
-          e.selling?.eggs[3].amount || 0,
-          e.selling?.eggs[4].amount || 0,
-        ]),
-      ),
-      "ไข่ทั้งหมดที่เหลือ (แผง)": String(
-        utils.sum([
-          Number(
-            calGroup(
-              utils.sum([
-                e.sum_eggs?.from_yesterday[0] || 0,
-                e.sum_eggs?.sum_collect[0] || 0,
-                -(e.sum_eggs?.sum_sell[0] || 0),
-              ]),
-            ),
-          ),
-          Number(
-            calGroup(
-              utils.sum([
-                e.sum_eggs?.from_yesterday[1] || 0,
-                e.sum_eggs?.sum_collect[1] || 0,
-                -(e.sum_eggs?.sum_sell[1] || 0),
-              ]),
-            ),
-          ),
-          Number(
-            calGroup(
-              utils.sum([
-                e.sum_eggs?.from_yesterday[2] || 0,
-                e.sum_eggs?.sum_collect[2] || 0,
-                -(e.sum_eggs?.sum_sell[2] || 0),
-              ]),
-            ),
-          ),
-          Number(
-            calGroup(
-              utils.sum([
-                e.sum_eggs?.from_yesterday[3] || 0,
-                e.sum_eggs?.sum_collect[3] || 0,
-                -(e.sum_eggs?.sum_sell[3] || 0),
-              ]),
-            ),
-          ),
-          Number(
-            calGroup(
-              utils.sum([
-                e.sum_eggs?.from_yesterday[4] || 0,
-                e.sum_eggs?.sum_collect[4] || 0,
-                -(e.sum_eggs?.sum_sell[4] || 0),
-              ]),
-            ),
-          ),
-        ]),
-      ),
-      "ขายไข่เบอร์ 0 (บาท)": String(e.selling?.eggs[0].price),
-      "ขายไข่เบอร์ 0 (แผง)": String(e.selling?.eggs[0].amount),
-      "ไข่เบอร์ 0 คงเหลือ (แผง)": calGroup(
-        utils.sum([
-          e.sum_eggs?.from_yesterday[0] || 0,
-          e.sum_eggs?.sum_collect[0] || 0,
-          -(e.sum_eggs?.sum_sell[0] || 0),
-        ]),
-      ),
-      "ขายไข่เบอร์ 1 (บาท)": String(e.selling?.eggs[1].price),
-      "ขายไข่เบอร์ 1 (แผง)": String(e.selling?.eggs[1].amount),
-      "ไข่เบอร์ 1 คงเหลือ (แผง)": calGroup(
-        utils.sum([
-          e.sum_eggs?.from_yesterday[1] || 0,
-          e.sum_eggs?.sum_collect[1] || 0,
-          -(e.sum_eggs?.sum_sell[1] || 0),
-        ]),
-      ),
-      "ขายไข่เบอร์ 2 (บาท)": String(e.selling?.eggs[2].price),
-      "ขายไข่เบอร์ 2 (แผง)": String(e.selling?.eggs[2].amount),
-      "ไข่เบอร์ 2 คงเหลือ (แผง)": calGroup(
-        utils.sum([
-          e.sum_eggs?.from_yesterday[2] || 0,
-          e.sum_eggs?.sum_collect[2] || 0,
-          -(e.sum_eggs?.sum_sell[2] || 0),
-        ]),
-      ),
-      "ขายไข่เบอร์ 3 (บาท)": String(e.selling?.eggs[3].price),
-      "ขายไข่เบอร์ 3 (แผง)": String(e.selling?.eggs[3].amount),
-      "ไข่เบอร์ 3 คงเหลือ (แผง)": calGroup(
-        utils.sum([
-          e.sum_eggs?.from_yesterday[3] || 0,
-          e.sum_eggs?.sum_collect[3] || 0,
-          -(e.sum_eggs?.sum_sell[3] || 0),
-        ]),
-      ),
-      "ขายไข่เบอร์ 4 (บาท)": String(e.selling?.eggs[4].price),
-      "ขายไข่เบอร์ 4 (แผง)": String(e.selling?.eggs[4].amount),
-      "ไข่เบอร์ 4 คงเหลือ (แผง)": calGroup(
-        utils.sum([
-          e.sum_eggs?.from_yesterday[4] || 0,
-          e.sum_eggs?.sum_collect[4] || 0,
-          -(e.sum_eggs?.sum_sell[4] || 0),
-        ]),
-      ),
+      "ขายไข่ทั้งหมด (บาท)": e.selling
+        ? String(
+            utils.sum([
+              e.selling.eggs[0].price,
+              e.selling.eggs[1].price,
+              e.selling.eggs[2].price,
+              e.selling.eggs[3].price,
+              e.selling.eggs[4].price,
+            ]),
+          )
+        : "",
+      "ขายไข่ทั้งหมด (แผง)": e.selling
+        ? String(
+            utils.sum([
+              e.selling.eggs[0].amount,
+              e.selling.eggs[1].amount,
+              e.selling.eggs[2].amount,
+              e.selling.eggs[3].amount,
+              e.selling.eggs[4].amount,
+            ]),
+          )
+        : "",
+      "ไข่ทั้งหมดที่เหลือ (แผง)": e.sum_eggs
+        ? String(
+            utils.sum([
+              Number(
+                calGroup(
+                  utils.sum([
+                    e.sum_eggs.from_yesterday[0],
+                    e.sum_eggs.sum_collect[0],
+                    -e.sum_eggs.sum_sell[0],
+                  ]),
+                ),
+              ),
+              Number(
+                calGroup(
+                  utils.sum([
+                    e.sum_eggs.from_yesterday[1],
+                    e.sum_eggs.sum_collect[1],
+                    -e.sum_eggs.sum_sell[1],
+                  ]),
+                ),
+              ),
+              Number(
+                calGroup(
+                  utils.sum([
+                    e.sum_eggs.from_yesterday[2],
+                    e.sum_eggs.sum_collect[2],
+                    -e.sum_eggs.sum_sell[2],
+                  ]),
+                ),
+              ),
+              Number(
+                calGroup(
+                  utils.sum([
+                    e.sum_eggs.from_yesterday[3],
+                    e.sum_eggs.sum_collect[3],
+                    -e.sum_eggs.sum_sell[3],
+                  ]),
+                ),
+              ),
+              Number(
+                calGroup(
+                  utils.sum([
+                    e.sum_eggs.from_yesterday[4],
+                    e.sum_eggs.sum_collect[4],
+                    -e.sum_eggs.sum_sell[4],
+                  ]),
+                ),
+              ),
+            ]),
+          )
+        : "",
+      "ขายไข่เบอร์ 0 (บาท)": e.selling ? String(e.selling.eggs[0].price) : "",
+      "ขายไข่เบอร์ 0 (แผง)": e.selling ? String(e.selling.eggs[0].amount) : "'",
+      "ไข่เบอร์ 0 คงเหลือ (แผง)": e.sum_eggs
+        ? calGroup(
+            utils.sum([
+              e.sum_eggs.from_yesterday[0],
+              e.sum_eggs.sum_collect[0],
+              -e.sum_eggs.sum_sell[0],
+            ]),
+          )
+        : "",
+      "ขายไข่เบอร์ 1 (บาท)": e.selling ? String(e.selling.eggs[1].price) : "",
+      "ขายไข่เบอร์ 1 (แผง)": e.selling ? String(e.selling.eggs[1].amount) : "",
+      "ไข่เบอร์ 1 คงเหลือ (แผง)": e.sum_eggs
+        ? calGroup(
+            utils.sum([
+              e.sum_eggs.from_yesterday[1],
+              e.sum_eggs.sum_collect[1],
+              -e.sum_eggs.sum_sell[1],
+            ]),
+          )
+        : "",
+      "ขายไข่เบอร์ 2 (บาท)": e.selling ? String(e.selling.eggs[2].price) : "",
+      "ขายไข่เบอร์ 2 (แผง)": e.selling ? String(e.selling.eggs[2].amount) : "",
+      "ไข่เบอร์ 2 คงเหลือ (แผง)": e.sum_eggs
+        ? calGroup(
+            utils.sum([
+              e.sum_eggs.from_yesterday[2],
+              e.sum_eggs.sum_collect[2],
+              -e.sum_eggs.sum_sell[2],
+            ]),
+          )
+        : "",
+      "ขายไข่เบอร์ 3 (บาท)": e.selling ? String(e.selling.eggs[3].price) : "",
+      "ขายไข่เบอร์ 3 (แผง)": e.selling ? String(e.selling.eggs[3].amount) : "",
+      "ไข่เบอร์ 3 คงเหลือ (แผง)": e.sum_eggs
+        ? calGroup(
+            utils.sum([
+              e.sum_eggs.from_yesterday[3],
+              e.sum_eggs.sum_collect[3],
+              -e.sum_eggs.sum_sell[3],
+            ]),
+          )
+        : "",
+      "ขายไข่เบอร์ 4 (บาท)": e.selling ? String(e.selling.eggs[4].price) : "",
+      "ขายไข่เบอร์ 4 (แผง)": e.selling ? String(e.selling.eggs[4].amount) : "",
+      "ไข่เบอร์ 4 คงเหลือ (แผง)": e.sum_eggs
+        ? calGroup(
+            utils.sum([
+              e.sum_eggs.from_yesterday[4],
+              e.sum_eggs.sum_collect[4],
+              -e.sum_eggs.sum_sell[4],
+            ]),
+          )
+        : "",
     };
   }
 
