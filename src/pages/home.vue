@@ -13,11 +13,9 @@
         @click="handleClickMenu(menu.to)"
       >
         <template #prepend>
-          <v-avatar
-            :image="`/icons/${menu.icon}`"
-            rounded="0"
-            height="40"
-          ></v-avatar>
+          <v-avatar rounded="0">
+            <v-img :src="`/icons/${menu.icon}`" width="35"></v-img>
+          </v-avatar>
         </template>
         <template #title>
           <span>{{ menu.title }}</span>
@@ -60,6 +58,12 @@ export default defineNuxtComponent({
           to: "/collecting",
         },
         {
+          title: "ตั้งค่าราคาขายไข่",
+          sub: "ราคาขายต่อแผง",
+          icon: "/eggs-setting.png",
+          to: "/prices/setting",
+        },
+        {
           title: "บันทึกราคาขายไข่ไก่",
           sub: "ยอดขายที่ขายไข่ไก่ได้",
           icon: "/nest.png",
@@ -72,9 +76,21 @@ export default defineNuxtComponent({
           to: "/accounting",
         },
         {
-          title: "ข้อมูลไข่ทั้งหมด",
-          sub: "ประวัติข้อมูลของการบันทึกไข่",
-          icon: "/eggs.png",
+          title: "บันทึกการรับไก่",
+          sub: "การรับไก่เข้า",
+          icon: "/chicken-come.png",
+          to: "",
+        },
+        {
+          title: "บันทึกไก่เสียชีวิต",
+          sub: "การรับไก่นำไก่ออก",
+          icon: "/chicken-dead.png",
+          to: "",
+        },
+        {
+          title: "รายงานข้อมูลไก่และไข่ไก่ทั้งหมด",
+          sub: "ประวัติข้อมูลของการบันทึกไก่และไข่",
+          icon: "/chickens-eggs-report.png",
           to: "/reports",
         },
       ],
@@ -87,7 +103,7 @@ export default defineNuxtComponent({
     },
     async calSum() {
       const today = moment().format("DD/MM/YYYY");
-      const td = await this.$query.get("eggs_sum", "record_date", "==", today);
+      const td = await this.$query.get("eggs-sum", "record_date", "==", today);
       if (!td.length) {
         const yd = await this.$db.getLastSum();
         const yd_data = {
@@ -111,7 +127,7 @@ export default defineNuxtComponent({
         const yd_remain = yd_data.from_yesterday.map((e, i) => {
           return utils.sum([e, yd_data.sum_collect[i], -yd_data.sum_sell[i]]);
         });
-        await this.$query.post("eggs_sum", {
+        await this.$query.post("eggs-sum", {
           sum_collect: [0, 0, 0, 0, 0],
           sum_sell: [0, 0, 0, 0, 0],
           record_date: today,

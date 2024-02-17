@@ -1,122 +1,112 @@
 <template>
-  <div class="d-flex flex-column justify-space-between t-h-full">
-    <v-window v-model="window" class="pb-4">
-      <v-window-item>
-        <v-form ref="collect-form-1" lazy-validation>
-          <div class="d-flex flex-column t-gap-6">
-            <span class="text-grey">{{ dateGreeting }}</span>
-            <div class="d-flex flex-column t-gap-3">
-              <span class="t-text-lg font-weight-bold">จำนวนไข่ไก่</span>
-              <common-data-table
-                :data="table_eggs.data"
-                :headers="table_eggs.headers"
+  <div>
+    <v-form
+      ref="collect-form"
+      lazy-validation
+      @submit.prevent="handleClickSave"
+    >
+      <div class="d-flex flex-column t-gap-6">
+        <span class="text-grey">{{ dateGreeting }}</span>
+        <div class="d-flex flex-column t-gap-3">
+          <span class="t-text-lg font-weight-bold">น้ำหนักอาหาร</span>
+          <common-data-table
+            :data="table_food.data"
+            :headers="table_food.headers"
+          >
+            <template #data.unit="{ thisData, index }">
+              <v-text-field
+                v-if="index !== 4"
+                :readonly="has_value"
+                :model-value="thisData"
+                :rules="rules.eggs_food_unit"
+                variant="underlined"
+                type="number"
+                :hide-details="false"
+                reverse
+                @update:model-value="(e) => handleInputFoodUnit(e, index)"
+              ></v-text-field>
+              <span v-else>{{ thisData }}</span>
+            </template>
+          </common-data-table>
+        </div>
+        <div class="d-flex flex-column t-gap-3">
+          <span class="t-text-lg font-weight-bold">จำนวนไข่ไก่</span>
+          <common-data-table
+            :data="table_eggs.data"
+            :headers="table_eggs.headers"
+          >
+            <template #data.unit="{ thisData, index }">
+              <v-text-field
+                v-if="index !== 4"
+                :readonly="has_value"
+                :model-value="thisData"
+                :rules="rules.eggs_unit"
+                variant="underlined"
+                type="number"
+                :hide-details="false"
+                reverse
+                @update:model-value="(e) => handleInputEggsUnit(e, index)"
+              ></v-text-field>
+              <span v-else>{{ thisData }}</span>
+            </template>
+          </common-data-table>
+        </div>
+        <div>
+          <span class="t-text-lg font-weight-bold"> น้ำหนักไข่ไก่ทั้งหมด </span>
+          <v-row>
+            <v-col cols="6" align-self="center">
+              <span>น้ำหนักรวม</span>
+            </v-col>
+            <v-col cols="6">
+              <v-text-field
+                v-model="form.weight_sum"
+                :readonly="has_value"
+                type="number"
+                variant="underlined"
+                :hide-details="false"
+                reverse
+                :rules="rules.eggs_weight_sum"
               >
-                <template #data.unit="{ thisData, index }">
-                  <v-text-field
-                    v-if="index !== 4"
-                    :readonly="has_value"
-                    :model-value="thisData"
-                    :rules="rules.eggs_unit"
-                    variant="underlined"
-                    type="number"
-                    :hide-details="false"
-                    reverse
-                    @update:model-value="(e) => handleInputEggsUnit(e, index)"
-                  ></v-text-field>
-                  <span v-else>{{ thisData }}</span>
+                <template #append-inner>
+                  <div>กรัม</div>
                 </template>
-              </common-data-table>
-            </div>
-            <div class="d-flex flex-column t-gap-3">
-              <span class="t-text-lg font-weight-bold">เบอร์ไข่ไก่</span>
-              <common-data-table
-                :data="table_eggs_number.data"
-                :headers="table_eggs_number.headers"
-              >
-                <template #data.unit="{ thisData, index }">
-                  <v-text-field
-                    v-if="index !== 5"
-                    :readonly="has_value"
-                    :model-value="thisData"
-                    :rules="rules.eggs_number_unit"
-                    variant="underlined"
-                    type="number"
-                    :hide-details="false"
-                    reverse
-                    @update:model-value="
-                      (e) => handleInputEggsNumberUnit(e, index)
-                    "
-                  ></v-text-field>
-                  <span v-else>{{ thisData }}</span>
-                </template>
-              </common-data-table>
-            </div>
-            <div>
-              <span class="t-text-lg font-weight-bold">
-                น้ำหนักไข่ไก่ทั้งหมด
-              </span>
-              <v-row>
-                <v-col cols="6" align-self="center">
-                  <span>น้ำหนักรวม</span>
-                </v-col>
-                <v-col cols="6">
-                  <v-text-field
-                    v-model="form.weight_sum"
-                    :readonly="has_value"
-                    type="number"
-                    variant="underlined"
-                    :hide-details="false"
-                    reverse
-                    :rules="rules.eggs_weight_sum"
-                  >
-                    <template #append-inner>
-                      <div>กรัม</div>
-                    </template>
-                  </v-text-field>
-                </v-col>
-              </v-row>
-            </div>
-          </div>
-        </v-form>
-      </v-window-item>
-      <v-window-item>
-        <v-form ref="collect-form-2" lazy-validation>
-          <div class="d-flex flex-column t-gap-6">
-            <span class="text-grey">{{ dateGreeting }}</span>
-            <div class="d-flex flex-column t-gap-3">
-              <span class="t-text-lg font-weight-bold">น้ำหนักอาหาร</span>
-              <common-data-table
-                :data="table_food.data"
-                :headers="table_food.headers"
-              >
-                <template #data.unit="{ thisData, index }">
-                  <v-text-field
-                    v-if="index !== 4"
-                    :readonly="has_value"
-                    :model-value="thisData"
-                    :rules="rules.eggs_food_unit"
-                    variant="underlined"
-                    type="number"
-                    :hide-details="false"
-                    reverse
-                    @update:model-value="(e) => handleInputFoodUnit(e, index)"
-                  ></v-text-field>
-                  <span v-else>{{ thisData }}</span>
-                </template>
-              </common-data-table>
-            </div>
-          </div>
-        </v-form>
-      </v-window-item>
-    </v-window>
-    <v-btn color="primary" @click="handleGoNext">
-      {{ has_value ? "แก้ไขข้อมูล" : window === 0 ? "ถัดไป" : "บันทึก" }}
-    </v-btn>
+              </v-text-field>
+            </v-col>
+          </v-row>
+        </div>
+        <div class="d-flex flex-column t-gap-3">
+          <span class="t-text-lg font-weight-bold">เบอร์ไข่ไก่</span>
+          <common-data-table
+            :data="table_eggs_number.data"
+            :headers="table_eggs_number.headers"
+          >
+            <template #data.unit="{ thisData, index }">
+              <v-text-field
+                v-if="index !== 5"
+                :readonly="has_value"
+                :model-value="thisData"
+                :rules="rules.eggs_number_unit"
+                variant="underlined"
+                type="number"
+                :hide-details="false"
+                reverse
+                @update:model-value="(e) => handleInputEggsNumberUnit(e, index)"
+              ></v-text-field>
+              <span v-else>{{ thisData }}</span>
+            </template>
+          </common-data-table>
+        </div>
+        <v-btn color="primary" type="submit">
+          {{ has_value ? "แก้ไขข้อมูล" : "บันทึก" }}
+        </v-btn>
+      </div>
+    </v-form>
   </div>
 </template>
 
 <script lang="ts">
 import moment from "moment-with-locales-es6";
+import type { VForm } from "vuetify/lib/components/index.mjs";
 import { useStore } from "~/stores";
 import type { HeaderProp } from "~/types/table.type";
 import type { EggSchema } from "~/types/egg.type";
@@ -245,7 +235,6 @@ export default defineNuxtComponent({
         sum_collect: [0, 0, 0, 0, 0],
         sum_sell: [0, 0, 0, 0, 0],
       },
-      window: 0,
       rules: {
         eggs_unit: [(v: string) => !!v || "กรุณากรอกจำนวนฟอง"],
         eggs_number_unit: [(v: string) => !!v || "กรุณากรอกจำนวนฟอง"],
@@ -272,14 +261,13 @@ export default defineNuxtComponent({
   },
   methods: {
     async init() {
-      this.window = 0;
       const date = moment().format("DD/MM/YYYY");
 
       const res_egg = await this.$query.get("collect-egg", "date", "==", date);
       const res_food = await this.$query.get("food", "date", "==", date);
 
       const res_sum = await this.$query.get(
-        "eggs_sum",
+        "eggs-sum",
         "record_date",
         "==",
         date,
@@ -363,22 +351,13 @@ export default defineNuxtComponent({
 
       this.table_eggs_number.data[5].unit = String(utils.sum(temp));
     },
-    async handleGoNext() {
+    async handleClickSave() {
       if (!this.has_value) {
-        if (this.window === 0) {
-          const ref = this.$refs["collect-form-1"] as any;
-          const { valid } = await ref.validate();
+        const ref = this.$refs["collect-form"] as VForm;
+        const { valid } = await ref.validate();
 
-          if (valid) {
-            this.window++;
-          }
-        } else {
-          const ref = this.$refs["collect-form-2"] as any;
-          const { valid } = await ref.validate();
-
-          if (valid) {
-            this.handleSave();
-          }
+        if (valid) {
+          this.handleSave();
         }
       } else {
         this.has_value = false;
@@ -438,7 +417,7 @@ export default defineNuxtComponent({
           await this.$query.post("collect-egg", param_egg_data);
           await this.$query.post("food", param_food_data);
         }
-        await this.$query.update("eggs_sum", this.editing_eggs_sum, {
+        await this.$query.update("eggs-sum", this.editing_eggs_sum, {
           ...this.edit_egg_sem_data,
           record_date: date,
           sum_collect: egg_number,

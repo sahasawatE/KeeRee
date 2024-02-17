@@ -17,34 +17,22 @@
           </div>
         </div>
       </v-card-text>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn slim variant="text" @click="detail_modal = true">
+          ดูทั้งหมด
+        </v-btn>
+      </v-card-actions>
     </v-card>
-    <div class="d-flex flex-row justify-end">
-      <v-btn slim variant="text" @click="detail_modal = true">
-        ดูรายละเอียดไข่ไก่ทั้งหมด ?
-      </v-btn>
-    </div>
     <v-form ref="sell-form" lazy-validation class="d-flex flex-column t-gap-2">
       <span class="font-weight-bold">กำหนดราคาขาย</span>
+      <span class="text-grey">
+        ราคาไข่ไก่ต่อ 1 แผง : {{ showPriceFrom() }}
+      </span>
       <common-data-table :headers="table.headers" :data="table.data">
-        <template #data.price="{ thisData, index }">
-          <div>
-            <span v-if="index === 5">{{ thisData }}</span>
-            <v-text-field
-              v-else
-              :model-value="thisData"
-              variant="underlined"
-              :hide-details="false"
-              type="number"
-              reverse
-              :rules="price_rules"
-              :readonly="viewHistory || has_value"
-              @update:model-value="(e) => handlePriceChange(e, index)"
-            >
-              <template #prepend-inner>
-                <span class="text-grey-darken-2">เบอร์ {{ index }}</span>
-              </template>
-            </v-text-field>
-          </div>
+        <template #data.no="{ index, thisData }">
+          <span v-if="index === 5">{{ thisData }}</span>
+          <span v-else class="text-grey-darken-2">เบอร์ {{ index }}</span>
         </template>
         <template #data.amount="{ thisData, index }">
           <div>
@@ -94,6 +82,7 @@ export default defineNuxtComponent({
     const edit_id = ref("");
 
     const headers: HeaderProp = [
+      { key: "no", title: "เบอร์ไข่ไก่" },
       {
         key: "price",
         title: "ราคา (฿)",
@@ -109,13 +98,18 @@ export default defineNuxtComponent({
     const table = ref({
       headers,
       data: [
-        { price: "", amount: "" },
-        { price: "", amount: "" },
-        { price: "", amount: "" },
-        { price: "", amount: "" },
-        { price: "", amount: "" },
-        { price: "รวมทั้งหมด", amount: "" },
+        { no: "0", price: "", amount: "" },
+        { no: "1", price: "", amount: "" },
+        { no: "2", price: "", amount: "" },
+        { no: "3", price: "", amount: "" },
+        { no: "4", price: "", amount: "" },
+        { no: "รวมทั้งหมด", price: "", amount: "" },
       ],
+    });
+
+    const price_from = ref({
+      date: "",
+      prices: [] as string[],
     });
 
     return {
@@ -123,6 +117,7 @@ export default defineNuxtComponent({
       date,
       edit_id,
       table,
+      price_from,
     };
   },
   async mounted() {
@@ -134,9 +129,7 @@ export default defineNuxtComponent({
     return {
       has_value: false,
       edit_sum_id: "",
-      eggs_remain: 0,
       eggs_can_sell: [] as number[],
-      price_rules: [(v: string) => !!v || "กรุณาระบุราคา"],
       detail_modal: false,
       sum_data: {
         sell: [] as number[],
@@ -147,9 +140,11 @@ export default defineNuxtComponent({
   },
   computed: {
     displayEggs() {
-      const eggs = this.eggs_remain;
-      const group = Math.floor(eggs / 30);
-      const indi = eggs % 30;
+      const { sell } = this.sum_data;
+
+      const remain = sell.map((_e, i) => this.remainEggs(i));
+      const group = utils.sum(remain.map((e) => Number(e.group)));
+      const indi = utils.sum(remain.map((e) => Number(e.indi)));
 
       return {
         group,
@@ -175,18 +170,24 @@ export default defineNuxtComponent({
           ]
         : [];
     },
-    remainEggs(
-      sum_sell: number[],
-      sum_collect: number[],
-      from_yesterday: number[],
-    ) {
-      const sell = utils.sum(sum_sell);
-      const collect = utils.sum(sum_collect);
-      const yesterday = utils.sum(from_yesterday);
-
-      const sum = collect + yesterday - sell;
-
-      return sum;
+    remainEggs(index: number) {
+      const { sell, collect, yesterday } = this.sum_data;
+      const remain = utils.sum([
+        yesterday[index],
+        collect[index],
+        -sell[index],
+      ]);
+      return {
+        number: String(index),
+        group: String(Math.floor(remain / 30)),
+        indi: String(remain % 30),
+      };
+    },
+    showPriceFrom() {
+      moment.locale("th");
+      return this.price_from.date
+        ? moment(this.price_from.date, "DD/MM/YYYY").format("LL")
+        : "";
     },
     async init() {
       try {
@@ -199,69 +200,99 @@ export default defineNuxtComponent({
         );
 
         const res_sum = await this.$query.get(
-          "eggs_sum",
+          "eggs-sum",
           "record_date",
           "==",
           this.date,
         );
 
-        if (res_sum.length) {
-          this.edit_sum_id = res_sum[0].id;
+        const res_price = await this.$query.get("selling-price");
+        if (res_price.length) {
+          const sorted = utils.dateSort(
+            "date",
+            res_price.map((e) => ({ ...e.data })),
+          ) as {
+            date: string;
+            prices: string[];
+          }[];
 
-          const sum_data = res_sum[0].data;
+          this.price_from.date = sorted.at(-1)!.date;
 
-          const sell = sum_data.sum_sell as number[];
-          const collect = sum_data.sum_collect as number[];
-          const yesterday = sum_data.from_yesterday as number[];
-          this.eggs_remain = this.remainEggs(sell, collect, yesterday);
-          this.eggs_can_sell = [
-            utils.sum([-sell[0], yesterday[0], collect[0]]),
-            utils.sum([-sell[1], yesterday[1], collect[1]]),
-            utils.sum([-sell[2], yesterday[2], collect[2]]),
-            utils.sum([-sell[3], yesterday[3], collect[3]]),
-            utils.sum([-sell[4], yesterday[4], collect[4]]),
-          ];
+          if (res_sum.length) {
+            this.edit_sum_id = res_sum[0].id;
 
-          this.sum_data.collect = collect;
-          this.sum_data.sell = sell;
-          this.sum_data.yesterday = yesterday;
-        }
+            const sum_data = res_sum[0].data;
 
-        if (res_selling.length) {
-          const { id, data } = res_selling[0];
-          this.edit_id = id;
-          this.has_value = true;
-          const selling_data = data as SellingSchema;
+            const sell = sum_data.sum_sell as number[];
+            const collect = sum_data.sum_collect as number[];
+            const yesterday = sum_data.from_yesterday as number[];
+            this.eggs_can_sell = [
+              utils.sum([-sell[0], yesterday[0], collect[0]]),
+              utils.sum([-sell[1], yesterday[1], collect[1]]),
+              utils.sum([-sell[2], yesterday[2], collect[2]]),
+              utils.sum([-sell[3], yesterday[3], collect[3]]),
+              utils.sum([-sell[4], yesterday[4], collect[4]]),
+            ];
 
-          const temp = selling_data.eggs.map((e) => ({
-            price: String(e.price),
-            amount: String(e.amount),
-          }));
-          this.table.data[0] = temp[0];
-          this.table.data[1] = temp[1];
-          this.table.data[2] = temp[2];
-          this.table.data[3] = temp[3];
-          this.table.data[4] = temp[4];
-          this.table.data[5].amount = String(
-            utils.sum([
-              selling_data.eggs[0].amount,
-              selling_data.eggs[1].amount,
-              selling_data.eggs[2].amount,
-              selling_data.eggs[3].amount,
-              selling_data.eggs[4].amount,
-            ]),
-          );
+            this.sum_data.collect = collect;
+            this.sum_data.sell = sell;
+            this.sum_data.yesterday = yesterday;
+          }
+
+          if (res_selling.length) {
+            const { id, data } = res_selling[0];
+            this.edit_id = id;
+            this.has_value = true;
+            const selling_data = data as SellingSchema;
+
+            const temp = selling_data.eggs.map((e) => ({
+              price: String(e.price),
+              amount: String(e.amount),
+            }));
+            this.table.data[0].price = temp[0].price;
+            this.table.data[0].amount = temp[0].amount;
+            this.table.data[1].price = temp[1].price;
+            this.table.data[1].amount = temp[1].amount;
+            this.table.data[2].price = temp[2].price;
+            this.table.data[2].amount = temp[2].amount;
+            this.table.data[3].price = temp[3].price;
+            this.table.data[3].amount = temp[3].amount;
+            this.table.data[4].price = temp[4].price;
+            this.table.data[4].amount = temp[4].amount;
+            this.table.data[5].amount = String(
+              utils.sum([
+                selling_data.eggs[0].amount,
+                selling_data.eggs[1].amount,
+                selling_data.eggs[2].amount,
+                selling_data.eggs[3].amount,
+                selling_data.eggs[4].amount,
+              ]),
+            );
+
+            this.price_from.date = selling_data.price_from;
+            this.price_from.prices =
+              sorted.find((e) => (e.date = selling_data.price_from))?.prices ??
+              sorted.at(-1)!.prices;
+          } else {
+            this.edit_id = "";
+            this.has_value = false;
+            this.table.data = [
+              { no: "0", price: sorted.at(-1)!.prices[0], amount: "" },
+              { no: "1", price: sorted.at(-1)!.prices[1], amount: "" },
+              { no: "2", price: sorted.at(-1)!.prices[2], amount: "" },
+              { no: "3", price: sorted.at(-1)!.prices[3], amount: "" },
+              { no: "4", price: sorted.at(-1)!.prices[4], amount: "" },
+              {
+                no: "รวมทั้งหมด",
+                price: String(
+                  utils.sum(sorted.at(-1)!.prices.map((e) => Number(e))),
+                ),
+                amount: "",
+              },
+            ];
+          }
         } else {
-          this.edit_id = "";
-          this.has_value = false;
-          this.table.data = [
-            { price: "", amount: "" },
-            { price: "", amount: "" },
-            { price: "", amount: "" },
-            { price: "", amount: "" },
-            { price: "", amount: "" },
-            { price: "รวมทั้งหมด", amount: "" },
-          ];
+          throw new Error("ยังไม่ได้กำหนดราคาไข่");
         }
       } catch (err) {
         this.$dialog.toast.error(err as string);
@@ -270,26 +301,30 @@ export default defineNuxtComponent({
       }
     },
     async handleSave() {
-      if (!this.has_value) {
-        const ref = this.$refs["sell-form"] as any;
-        const { valid } = await ref.validate();
+      if (this.price_from.date) {
+        if (!this.has_value) {
+          const ref = this.$refs["sell-form"] as any;
+          const { valid } = await ref.validate();
 
-        if (valid) {
-          this.store.setLoading(true);
-          if (this.edit_id) {
-            await this.handleSaveEdit();
-          } else {
-            await this.handleSaveNew();
+          if (valid) {
+            this.store.setLoading(true);
+            if (this.edit_id) {
+              await this.handleSaveEdit();
+            } else {
+              await this.handleSaveNew();
+            }
           }
+        } else {
+          const temp = this.eggs_can_sell.map(
+            (e, i) => this.sum_data.sell[i] + e,
+          );
+
+          this.eggs_can_sell = temp;
+
+          this.has_value = false;
         }
       } else {
-        const temp = this.eggs_can_sell.map(
-          (e, i) => this.sum_data.sell[i] + e,
-        );
-
-        this.eggs_can_sell = temp;
-
-        this.has_value = false;
+        this.$dialog.toast.error("ไม่ได้กำหนดราคาไข่");
       }
     },
     async handleSaveNew() {
@@ -302,6 +337,7 @@ export default defineNuxtComponent({
               price: parseInt(e.price),
               amount: parseInt(e.amount),
             })),
+          price_from: this.price_from.date,
         };
         await this.$query.post("selling", sell_param);
 
@@ -310,7 +346,7 @@ export default defineNuxtComponent({
             .filter((_, i) => i !== 5)
             .map((e) => parseInt(e.amount) * 30),
         };
-        await this.$query.update("eggs_sum", this.edit_sum_id, sum_param);
+        await this.$query.update("eggs-sum", this.edit_sum_id, sum_param);
 
         this.$dialog.toast.success("บันทึกเรียบร้อย");
         await this.init();
@@ -330,6 +366,7 @@ export default defineNuxtComponent({
               price: parseInt(e.price),
               amount: parseInt(e.amount),
             })),
+          price_from: this.price_from.date,
         };
         await this.$query.update("selling", this.edit_id, sell_param);
 
@@ -338,7 +375,7 @@ export default defineNuxtComponent({
             .filter((_, i) => i !== 5)
             .map((e) => parseInt(e.amount) * 30),
         };
-        await this.$query.update("eggs_sum", this.edit_sum_id, sum_param);
+        await this.$query.update("eggs-sum", this.edit_sum_id, sum_param);
 
         this.$dialog.toast.success("บันทึกเรียบร้อย");
         await this.init();
@@ -355,7 +392,7 @@ export default defineNuxtComponent({
       this.table.data[i].amount = e;
 
       const temp = this.table.data
-        .filter((e) => e.price !== "รวมทั้งหมด")
+        .filter((e) => e.no !== "รวมทั้งหมด")
         .map((e) => parseInt(e.amount) || 0);
 
       this.table.data[5].amount = String(utils.sum(temp));

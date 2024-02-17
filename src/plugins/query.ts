@@ -19,7 +19,8 @@ type collectionName =
   | "accounting"
   | "food"
   | "selling"
-  | "eggs_sum";
+  | "selling-price"
+  | "eggs-sum";
 
 export default defineNuxtPlugin((_app) => {
   const db = useFirestore();
@@ -106,7 +107,7 @@ export default defineNuxtPlugin((_app) => {
           };
           try {
             await checking();
-            const cl = collection(db, "eggs_sum");
+            const cl = collection(db, "eggs-sum");
             const qr = query(cl);
 
             const result = await getDocs(qr);

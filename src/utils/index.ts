@@ -1,9 +1,11 @@
 import { Buffer } from "buffer";
+import moment from "moment";
 
 export const utils = {
   numOnly(data: string) {
     return data.replace(/[^0-9]+/g, "");
   },
+
   phone(value: string) {
     const num = this.numOnly(value);
 
@@ -63,5 +65,19 @@ export const utils = {
       "utf8",
     );
     return data;
+  },
+
+  dateSort(key: string, arr: any[], format = "DD/MM/YYYY") {
+    const data = arr.map((e) => ({
+      ...e,
+      [key]: moment(e[key] as string, format),
+    }));
+
+    const result = data.sort((a, b) => a[key].diff(b[key]));
+
+    return result.map((e) => ({
+      ...e,
+      [key]: moment(e[key]).format(format),
+    }));
   },
 };

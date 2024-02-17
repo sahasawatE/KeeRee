@@ -1,6 +1,7 @@
 type SellingSchema = {
   date: string;
   eggs: { price: number; amount: number }[];
+  price_from: string;
 };
 
 type SumSchema = {

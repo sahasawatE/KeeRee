@@ -171,7 +171,7 @@ export default defineNuxtComponent({
       const acc_data = await this.$query.get("accounting");
       this.acc_data = acc_data;
 
-      const sum_eggs = await this.$query.get("eggs_sum");
+      const sum_eggs = await this.$query.get("eggs-sum");
       this.sum_eggs = sum_eggs;
 
       const collect_eggs = await this.$query.get("collect-egg");
