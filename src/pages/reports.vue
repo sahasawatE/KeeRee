@@ -1,37 +1,37 @@
 <template>
   <div class="d-flex flex-column t-gap-4">
     <v-row>
-      <v-col cols="3" md="auto">
+      <v-col cols="auto">
         <v-btn
           slim
           :variant="date_range === '0' ? 'flat' : 'outlined'"
           :color="date_range === '0' ? 'primary' : 'grey-darken-2'"
           @click="date_range = '0'"
         >
-          วันนี้
+          เดือนนี้
         </v-btn>
       </v-col>
-      <v-col cols="3" md="auto">
+      <v-col cols="auto">
         <v-btn
           slim
           :variant="date_range === '1' ? 'flat' : 'outlined'"
           :color="date_range === '1' ? 'primary' : 'grey-darken-2'"
           @click="date_range = '1'"
         >
-          7 วัน
+          2 เดือนก่อน
         </v-btn>
       </v-col>
-      <v-col cols="3" md="auto">
+      <v-col cols="auto">
         <v-btn
           slim
           :variant="date_range === '2' ? 'flat' : 'outlined'"
           :color="date_range === '2' ? 'primary' : 'grey-darken-2'"
           @click="date_range = '2'"
         >
-          30 วัน
+          3 เดือนก่อน
         </v-btn>
       </v-col>
-      <v-col cols="3" md="auto">
+      <v-col cols="auto">
         <v-btn
           slim
           :variant="date_range === '3' ? 'flat' : 'outlined'"
@@ -45,22 +45,13 @@
     <v-expand-transition>
       <v-card v-show="date_range === '3'">
         <v-card-text>
-          <v-row>
-            <v-col>
-              <common-datepicker
-                v-model="date.start"
-                label="วันที่เริ่มต้น"
-                :min="minStartDate"
-              />
-            </v-col>
-            <v-col>
-              <common-datepicker
-                v-model="date.end"
-                label="วันที่สิ้นสุด"
-                :min="minEndDate"
-              />
-            </v-col>
-          </v-row>
+          <v-select
+            v-model="monthModel"
+            :items="monthOptions"
+            hide-details
+            variant="outlined"
+            label="เลือกเดือน"
+          ></v-select>
         </v-card-text>
       </v-card>
     </v-expand-transition>
@@ -198,17 +189,21 @@ export default defineNuxtComponent({
       moment.locale("th");
       switch (this.date_range) {
         case "0":
-          return moment().format("ll");
+          return `${moment().startOf("month").format("ll")} - ${moment()
+            .endOf("month")
+            .format("ll")}`;
 
         case "1":
-          return `${moment().subtract(7, "d").format("ll")} - ${moment().format(
-            "ll",
-          )}`;
+          return `${moment()
+            .subtract(1, "month")
+            .startOf("month")
+            .format("ll")} - ${moment().endOf("month").format("ll")}`;
 
         case "2":
           return `${moment()
-            .subtract(30, "d")
-            .format("ll")} - ${moment().format("ll")}`;
+            .subtract(2, "month")
+            .startOf("month")
+            .format("ll")} - ${moment().endOf("month").format("ll")}`;
 
         case "3":
           return `${moment(this.date.start, "DD/MM/YYYY").format(
@@ -216,25 +211,30 @@ export default defineNuxtComponent({
           )} - ${moment(this.date.end, "DD/MM/YYYY").format("ll")}`;
 
         default:
-          return moment().format("ll");
+          return `${moment().startOf("month").format("ll")} - ${moment()
+            .endOf("month")
+            .format("ll")}`;
       }
     },
     dateRange(): Moment[] {
       const today = moment().format("DD/MM/YYYY");
       switch (this.date_range) {
         case "0":
-          return [moment(today, "DD/MM/YYYY"), moment(today, "DD/MM/YYYY")];
+          return [
+            moment(today, "DD/MM/YYYY").startOf("month"),
+            moment(today, "DD/MM/YYYY").endOf("month"),
+          ];
 
         case "1":
           return [
-            moment(today, "DD/MM/YYYY").subtract(7, "d"),
-            moment(today, "DD/MM/YYYY"),
+            moment(today, "DD/MM/YYYY").subtract(1, "month").startOf("month"),
+            moment(today, "DD/MM/YYYY").endOf("month"),
           ];
 
         case "2":
           return [
-            moment(today, "DD/MM/YYYY").subtract(30, "d"),
-            moment(today, "DD/MM/YYYY"),
+            moment(today, "DD/MM/YYYY").subtract(2, "month").startOf("month"),
+            moment(today, "DD/MM/YYYY").endOf("month"),
           ];
 
         case "3":
@@ -244,14 +244,50 @@ export default defineNuxtComponent({
           ];
 
         default:
-          return [moment(), moment()];
+          return [
+            moment(today, "DD/MM/YYYY").startOf("month"),
+            moment(today, "DD/MM/YYYY").endOf("month"),
+          ];
       }
     },
-    minStartDate() {
-      return moment().subtract(3, "M").toDate();
+    monthOptions() {
+      const m = moment().month();
+
+      return [
+        {
+          title: moment.months(m - 2),
+          value: moment()
+            .month(m - 2)
+            .format("DD/MM/YYYY"),
+        },
+        {
+          title: moment.months(m - 1),
+          value: moment()
+            .month(m - 1)
+            .format("DD/MM/YYYY"),
+        },
+        {
+          title: moment.months(m),
+          value: moment().month(m).format("DD/MM/YYYY"),
+        },
+      ];
     },
-    minEndDate() {
-      return moment(this.date.start, "DD/MM/YYYY").toDate();
+    monthModel: {
+      get() {
+        const sd: Moment = this.date.start
+          ? moment(this.date.start, "DD/MM/YYYY")
+          : moment();
+        const m = sd.month();
+        return moment.months(m);
+      },
+      set(e: string) {
+        this.date.start = moment(e, "DD/MM/YYYY")
+          .startOf("month")
+          .format("DD/MM/YYYY");
+        this.date.end = moment(e, "DD/MM/YYYY")
+          .endOf("month")
+          .format("DD/MM/YYYY");
+      },
     },
   },
   methods: {

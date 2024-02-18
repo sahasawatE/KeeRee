@@ -190,6 +190,7 @@ export default defineNuxtComponent({
             }
 
             this.$dialog.toast.success("บันทึกสำเร็จ");
+            await this.init();
           } catch (err) {
             this.$dialog.toast.error(err as string);
           } finally {
