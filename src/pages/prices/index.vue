@@ -259,6 +259,13 @@ export default defineNuxtComponent({
             this.table.data[3].amount = temp[3].amount;
             this.table.data[4].price = temp[4].price;
             this.table.data[4].amount = temp[4].amount;
+            this.table.data[5].price = String(
+              utils.sum(
+                this.table.data
+                  .filter((_e, i) => i !== 5)
+                  .map((e) => Number(e.price)),
+              ),
+            );
             this.table.data[5].amount = String(
               utils.sum([
                 selling_data.eggs[0].amount,
