@@ -20,7 +20,8 @@ type collectionName =
   | "food"
   | "selling"
   | "selling-price"
-  | "eggs-sum";
+  | "eggs-sum"
+  | "chicken";
 
 export default defineNuxtPlugin((_app) => {
   const db = useFirestore();

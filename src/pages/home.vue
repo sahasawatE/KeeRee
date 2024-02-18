@@ -79,13 +79,13 @@ export default defineNuxtComponent({
           title: "บันทึกการรับไก่",
           sub: "การรับไก่เข้า",
           icon: "/chicken-come.png",
-          to: "",
+          to: "/chicken/new",
         },
         {
           title: "บันทึกไก่เสียชีวิต",
           sub: "การรับไก่นำไก่ออก",
           icon: "/chicken-dead.png",
-          to: "",
+          to: "/chicken/dead",
         },
         {
           title: "รายงานข้อมูลไก่และไข่ไก่ทั้งหมด",

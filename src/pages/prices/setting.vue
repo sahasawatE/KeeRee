@@ -3,7 +3,7 @@
     <v-form ref="price-setting-form" lazy-validation>
       <div class="d-flex flex-column t-gap-6">
         <div class="text-grey d-flex flex-row justify-space-between">
-          <span>{{ dateGreeting }}</span>
+          <span class="text-grey">{{ dateGreeting }}</span>
           <span v-if="price_from">อัพเดตเมื่อ: {{ price_from }}</span>
         </div>
         <common-data-table :data="table.data" :headers="table.headers">
@@ -164,6 +164,7 @@ export default defineNuxtComponent({
             } else {
               await this.$query.post("selling-price", param);
             }
+            this.$dialog.toast.success("บันทึกเรียบร้อย");
             await this.init();
           } catch (err) {
             this.$dialog.toast.error(err as string);
