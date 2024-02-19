@@ -4,10 +4,13 @@
       <v-sonner />
     </client-only>
     <v-app-bar
-      class=""
-      color="white"
+      color="transparent"
       :title="menuTitle"
-      style="border-bottom: 1px solid rgb(var(--v-theme-grey-50))"
+      style="
+        border-bottom: 1px solid rgb(var(--v-theme-grey-50));
+        background-color: rgba(255, 255, 255, 0.9) !important;
+        backdrop-filter: blur(15px) !important;
+      "
     >
       <template #prepend>
         <v-btn icon @click="$router.back()">

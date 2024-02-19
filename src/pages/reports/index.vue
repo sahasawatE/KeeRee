@@ -31,7 +31,7 @@
     </div>
     <div class="d-flex flex-column t-gap-3">
       <span class="t-font-bold t-text-md">จำนวนแผงไข่ไก่</span>
-      <v-list :items="sum_egg_groups" :border="false">
+      <v-list :items="remain_egg_groups" :border="false">
         <template #prepend="{ item }">
           <div class="mr-6">
             <v-avatar :color="item.no === 1 ? 'primary' : 'grey-lighten-2'">
@@ -60,6 +60,60 @@
           </div>
         </v-card-text>
       </v-card>
+    </div>
+    <div class="d-flex flex-column t-gap-3">
+      <span class="t-font-bold t-text-md">จำนวนแผงไข่ไก่ที่สะสมไว้</span>
+      <v-list :items="sum_egg_groups" :border="false">
+        <template #prepend="{ item }">
+          <div class="mr-6">
+            <v-avatar :color="item.no === 1 ? 'primary' : 'grey-lighten-2'">
+              {{ item.no }}
+            </v-avatar>
+          </div>
+        </template>
+        <template #append="{ item }">
+          <div class="d-flex flex-row align-baseline t-gap-2 t-font-semibold">
+            <span class="t-text-lg">{{ item.amount }}</span>
+            <span>แผง</span>
+          </div>
+        </template>
+      </v-list>
+    </div>
+    <div class="d-flex flex-column t-gap-3">
+      <span class="t-font-bold t-text-md">จำนวนไข่คงเหลือ</span>
+      <v-card variant="outlined" color="grey-lighten-2">
+        <v-card-text class="text-black">
+          <div class="d-flex flex-row justify-space-between">
+            <span class="d-flex flex-row align-center">จำนวนไข่ทั้งหมด</span>
+            <div class="d-flex flex-row align-baseline t-gap-2 t-font-semibold">
+              <span class="t-text-lg">0</span>
+              <span>ฟอง</span>
+            </div>
+          </div>
+        </v-card-text>
+      </v-card>
+    </div>
+    <div class="d-flex flex-column t-gap-3">
+      <span class="t-font-bold t-text-md">ภาพรวมข้อมูลของไก่</span>
+      <v-row>
+        <v-col v-for="(c, i) in chicken" :key="`chicken-${i}`">
+          <v-card variant="outlined" color="grey-lighten-2">
+            <v-card-text class="text-black d-flex flex-column t-gap-2">
+              <div class="d-flex flex-row justify-space-between align-center">
+                <span class="text-grey">{{ c.title }}</span>
+              </div>
+              <div
+                class="d-flex flex-row t-gap-2 t-font-bold t-text-md align-baseline"
+              >
+                <span class="t-text-lg">{{ c.value }} %</span>
+              </div>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+    </div>
+    <div class="d-flex flex-column t-gap-3">
+      <span class="t-font-bold t-text-md">การออกไข่</span>
     </div>
   </div>
 </template>
@@ -135,6 +189,29 @@ export default defineNuxtComponent({
       { title: "เบอร์ 4", amount: 0, no: 5 },
     ]);
 
+    const remain_egg_groups = ref([
+      { title: "เบอร์ 0", amount: 0, no: 1 },
+      { type: "divider" },
+      { title: "เบอร์ 1", amount: 0, no: 2 },
+      { type: "divider" },
+      { title: "เบอร์ 2", amount: 0, no: 3 },
+      { type: "divider" },
+      { title: "เบอร์ 3", amount: 0, no: 4 },
+      { type: "divider" },
+      { title: "เบอร์ 4", amount: 0, no: 5 },
+    ]);
+
+    const chicken = ref([
+      {
+        title: "อัตราการเพิ่มระหว่างรุ่น",
+        value: 0,
+      },
+      {
+        title: "อัตราการเสียชีวิตของไก่",
+        value: 0,
+      },
+    ]);
+
     const store = useStore();
 
     return {
@@ -143,6 +220,8 @@ export default defineNuxtComponent({
       summary,
       sum_egg_groups,
       weight_sum,
+      chicken,
+      remain_egg_groups,
     };
   },
   props: {
@@ -164,6 +243,10 @@ export default defineNuxtComponent({
     },
     sumEggs: {
       type: Array as PropType<number[][]>,
+      required: true,
+    },
+    eggRemain: {
+      type: Array as PropType<number[]>,
       required: true,
     },
     eggsPercent: {
@@ -208,8 +291,6 @@ export default defineNuxtComponent({
         if (val.length) {
           const g = val.map((e) => Math.floor(e / 30));
 
-          this.summary[1].amount = utils.sum(g);
-
           this.sum_egg_groups[0].amount = g[0];
           this.sum_egg_groups[2].amount = g[1];
           this.sum_egg_groups[4].amount = g[2];
@@ -229,6 +310,23 @@ export default defineNuxtComponent({
       deep: true,
       handler(val: FoodSum) {
         this.summary[3].amount = val.sum;
+      },
+    },
+    "$props.eggRemain": {
+      immediate: true,
+      deep: true,
+      handler(val: number[]) {
+        if (val.length) {
+          const g = val.map((e) => Math.floor(e / 30));
+
+          this.summary[1].amount = utils.sum(g);
+
+          this.remain_egg_groups[0].amount = g[0];
+          this.remain_egg_groups[2].amount = g[1];
+          this.remain_egg_groups[4].amount = g[2];
+          this.remain_egg_groups[6].amount = g[3];
+          this.remain_egg_groups[8].amount = g[4];
+        }
       },
     },
   },

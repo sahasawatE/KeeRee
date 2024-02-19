@@ -70,6 +70,7 @@
       :food-sum="food_sum"
       :sum-eggs="sum_eggs_sum"
       :eggs-percent="eggs_percent"
+      :egg-remain="egg_remain"
     />
   </div>
 </template>
@@ -128,6 +129,7 @@ export default defineNuxtComponent({
     const selling = ref<Response[]>([]);
 
     const sum_eggs_sum = ref<number[]>([]);
+    const egg_remain = ref<number[]>([]);
     const eggs_percent = ref(0);
     const weight_avg = ref(0);
     const weight_sum = ref(0);
@@ -158,6 +160,7 @@ export default defineNuxtComponent({
       sum_eggs_sum,
       selling,
       eggs_percent,
+      egg_remain,
     };
   },
   async mounted() {
@@ -309,30 +312,43 @@ export default defineNuxtComponent({
     async filterSumEggs() {
       const filter_data = this.filtering(this.sum_eggs, "record_date");
       const data = filter_data.map((e) => e.data) as SumSchema[];
-      const sorted: SumSchema[] = await utils.dateSort("record_date", data);
-      const s = sorted.at(-1);
+      if (data.length) {
+        const sorted: SumSchema[] = await utils.dateSort("record_date", data);
+        const s = sorted.at(-1);
 
-      const latest = moment(s!.record_date, "DD/MM/YYYY");
-      const bf = data.find(
-        (e) => e.record_date === latest.subtract(1, "d").format("DD/MM/YYYY"),
-      );
+        const latest = moment(s!.record_date, "DD/MM/YYYY");
+        const bf = data.find(
+          (e) => e.record_date === latest.subtract(1, "d").format("DD/MM/YYYY"),
+        );
 
-      const yd_sum = utils.sum(bf!.sum_collect);
-      const td_sum = utils.sum(s!.sum_collect);
+        const yd_sum = utils.sum(bf!.sum_collect);
+        const td_sum = utils.sum(s!.sum_collect);
 
-      this.eggs_percent = Math.floor((td_sum / yd_sum) * 10000) / 100;
+        this.eggs_percent = Math.floor((td_sum / yd_sum) * 10000) / 100;
 
-      const sum_data = [
-        utils.sum([s!.from_yesterday[0], s!.sum_collect[0], -s!.sum_sell[0]]),
-        utils.sum([s!.from_yesterday[1], s!.sum_collect[1], -s!.sum_sell[1]]),
-        utils.sum([s!.from_yesterday[2], s!.sum_collect[2], -s!.sum_sell[2]]),
-        utils.sum([s!.from_yesterday[3], s!.sum_collect[3], -s!.sum_sell[3]]),
-        utils.sum([s!.from_yesterday[4], s!.sum_collect[4], -s!.sum_sell[4]]),
-      ];
-      this.sum_eggs_sum = sum_data;
+        const sum_data = [
+          utils.sum([s!.from_yesterday[0], s!.sum_collect[0], -s!.sum_sell[0]]),
+          utils.sum([s!.from_yesterday[1], s!.sum_collect[1], -s!.sum_sell[1]]),
+          utils.sum([s!.from_yesterday[2], s!.sum_collect[2], -s!.sum_sell[2]]),
+          utils.sum([s!.from_yesterday[3], s!.sum_collect[3], -s!.sum_sell[3]]),
+          utils.sum([s!.from_yesterday[4], s!.sum_collect[4], -s!.sum_sell[4]]),
+        ];
+        this.sum_eggs_sum = sum_data;
+      } else {
+        this.sum_eggs_sum = [0, 0, 0, 0, 0];
+        this.eggs_percent = 0;
+      }
     },
     filterCollectEggss() {
       const filter_data = this.filtering(this.collect_eggs, "date");
+      const egg_remain = [
+        utils.sum(filter_data.map((e) => e.data.egg_number[0])),
+        utils.sum(filter_data.map((e) => e.data.egg_number[1])),
+        utils.sum(filter_data.map((e) => e.data.egg_number[2])),
+        utils.sum(filter_data.map((e) => e.data.egg_number[3])),
+        utils.sum(filter_data.map((e) => e.data.egg_number[4])),
+      ];
+      this.egg_remain = egg_remain;
       this.weight_avg =
         Math.floor(utils.sum(filter_data.map((e) => e.data.weight_avg)) * 100) /
         100;
