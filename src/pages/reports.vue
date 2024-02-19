@@ -65,15 +65,16 @@
       :page-key="(route: any) => route.fullPath"
       :chart-options="chart_options"
       :filtered-data="acc_filtered_data"
+      :weight-avg="weight_avg"
       :weight-sum="weight_sum"
       :food-sum="food_sum"
       :sum-eggs="sum_eggs_sum"
+      :eggs-percent="eggs_percent"
     />
   </div>
 </template>
 
 <script lang="ts">
-import * as XLSX from "xlsx/xlsx.mjs";
 import type { Moment } from "moment";
 import moment from "moment-with-locales-es6";
 
@@ -126,7 +127,9 @@ export default defineNuxtComponent({
     const food = ref<Response[]>([]);
     const selling = ref<Response[]>([]);
 
-    const sum_eggs_sum = ref<number[][]>([]);
+    const sum_eggs_sum = ref<number[]>([]);
+    const eggs_percent = ref(0);
+    const weight_avg = ref(0);
     const weight_sum = ref(0);
     const food_sum = ref({
       row: {
@@ -149,10 +152,12 @@ export default defineNuxtComponent({
       sum_eggs,
       collect_eggs,
       food,
+      weight_avg,
       weight_sum,
       food_sum,
       sum_eggs_sum,
       selling,
+      eggs_percent,
     };
   },
   async mounted() {
@@ -301,20 +306,36 @@ export default defineNuxtComponent({
 
       return filter_data;
     },
-    filterSumEggs() {
+    async filterSumEggs() {
       const filter_data = this.filtering(this.sum_eggs, "record_date");
       const data = filter_data.map((e) => e.data) as SumSchema[];
-      const sum_data = data.map((e) => [
-        utils.sum([e.from_yesterday[0], e.sum_collect[0], -e.sum_sell[0]]),
-        utils.sum([e.from_yesterday[1], e.sum_collect[1], -e.sum_sell[1]]),
-        utils.sum([e.from_yesterday[2], e.sum_collect[2], -e.sum_sell[2]]),
-        utils.sum([e.from_yesterday[3], e.sum_collect[3], -e.sum_sell[3]]),
-        utils.sum([e.from_yesterday[4], e.sum_collect[4], -e.sum_sell[4]]),
-      ]);
+      const sorted: SumSchema[] = await utils.dateSort("record_date", data);
+      const s = sorted.at(-1);
+
+      const latest = moment(s!.record_date, "DD/MM/YYYY");
+      const bf = data.find(
+        (e) => e.record_date === latest.subtract(1, "d").format("DD/MM/YYYY"),
+      );
+
+      const yd_sum = utils.sum(bf!.sum_collect);
+      const td_sum = utils.sum(s!.sum_collect);
+
+      this.eggs_percent = Math.floor((td_sum / yd_sum) * 10000) / 100;
+
+      const sum_data = [
+        utils.sum([s!.from_yesterday[0], s!.sum_collect[0], -s!.sum_sell[0]]),
+        utils.sum([s!.from_yesterday[1], s!.sum_collect[1], -s!.sum_sell[1]]),
+        utils.sum([s!.from_yesterday[2], s!.sum_collect[2], -s!.sum_sell[2]]),
+        utils.sum([s!.from_yesterday[3], s!.sum_collect[3], -s!.sum_sell[3]]),
+        utils.sum([s!.from_yesterday[4], s!.sum_collect[4], -s!.sum_sell[4]]),
+      ];
       this.sum_eggs_sum = sum_data;
     },
     filterCollectEggss() {
       const filter_data = this.filtering(this.collect_eggs, "date");
+      this.weight_avg =
+        Math.floor(utils.sum(filter_data.map((e) => e.data.weight_avg)) * 100) /
+        100;
       this.weight_sum = utils.sum(filter_data.map((e) => e.data.weight_sum));
     },
     filterFood() {
@@ -381,7 +402,7 @@ export default defineNuxtComponent({
       this.$router.push(path);
     },
     handleExportReports() {
-      const { sheet_name, data } = this.$csv.export(
+      const { sheet_name, data } = this.$csv.createSheet(
         this.acc_data,
         this.sum_eggs,
         this.collect_eggs,
@@ -390,43 +411,7 @@ export default defineNuxtComponent({
         this.dateRange,
       );
 
-      // create heading
-      const collect_heading = [Object.keys(data.collect_eggs_csv[0])];
-      const sell_heading = [Object.keys(data.sell_eggs_csv[0])];
-      const acc_heading = [Object.keys(data.accounting_csv[0])];
-
-      // new work book
-      const wb = XLSX.utils.book_new();
-
-      // create coolect sheet
-      const ws1: XLSX.WorkSheet = XLSX.utils.json_to_sheet([]);
-      XLSX.utils.sheet_add_aoa(ws1, collect_heading);
-      XLSX.utils.sheet_add_json(ws1, data.collect_eggs_csv, {
-        origin: "A2",
-        skipHeader: true,
-      });
-      XLSX.utils.book_append_sheet(wb, ws1, sheet_name[0]);
-
-      // create sell sheet
-      const ws2: XLSX.WorkSheet = XLSX.utils.json_to_sheet([]);
-      XLSX.utils.sheet_add_aoa(ws2, sell_heading);
-      XLSX.utils.sheet_add_json(ws2, data.sell_eggs_csv, {
-        origin: "A2",
-        skipHeader: true,
-      });
-      XLSX.utils.book_append_sheet(wb, ws2, sheet_name[1]);
-
-      // create accounting sheet
-      const ws3: XLSX.WorkSheet = XLSX.utils.json_to_sheet([]);
-      XLSX.utils.sheet_add_aoa(ws3, acc_heading);
-      XLSX.utils.sheet_add_json(ws3, data.accounting_csv, {
-        origin: "A2",
-        skipHeader: true,
-      });
-      XLSX.utils.book_append_sheet(wb, ws3, sheet_name[2]);
-
-      // export work book
-      XLSX.writeFile(wb, `รายงานฟาร์มไก่ (${moment().format("ll")}).xlsx`);
+      this.$csv.export(sheet_name, data);
     },
   },
   watch: {

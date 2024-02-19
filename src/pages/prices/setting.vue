@@ -101,13 +101,13 @@ export default defineNuxtComponent({
             };
           };
 
-          const sorted = utils.dateSort(
-            "date",
-            prices.map((e) => ({ ...e.data })),
-          ) as {
+          const sorted: {
             date: string;
             prices: string[];
-          }[];
+          }[] = await utils.dateSort(
+            "date",
+            prices.map((e) => ({ ...e.data })),
+          );
 
           sorted.at(-1)!.prices.forEach((e, i) => {
             this.table.data[i].price = e;

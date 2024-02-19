@@ -8,7 +8,7 @@ type SumSchema = {
   sum_sell: number[];
   sum_collect: number[];
   from_yesterday: number[];
-  redord_date: string;
+  record_date: string;
 };
 
 type SumDetails = {

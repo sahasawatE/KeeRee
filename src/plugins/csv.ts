@@ -1,3 +1,5 @@
+import * as XLSX from "xlsx/xlsx.mjs";
+
 import moment from "moment-with-locales-es6";
 
 import type { Moment } from "moment";
@@ -523,10 +525,57 @@ export default defineNuxtPlugin(() => {
     return items.map((e, i) => ({ ...e, คงเหลือ: sum[i] }));
   }
 
+  function XLSXHandler(
+    sheet_name: string[],
+    data: {
+      collect_eggs_csv: CollectEggsCSV[];
+      sell_eggs_csv: SellEggsCSV[];
+      accounting_csv: AccountingCSV[];
+    },
+  ) {
+    // create heading
+    const collect_heading = [Object.keys(data.collect_eggs_csv[0])];
+    const sell_heading = [Object.keys(data.sell_eggs_csv[0])];
+    const acc_heading = [Object.keys(data.accounting_csv[0])];
+
+    // new work book
+    const wb = XLSX.utils.book_new();
+
+    // create coolect sheet
+    const ws1: XLSX.WorkSheet = XLSX.utils.json_to_sheet([]);
+    XLSX.utils.sheet_add_aoa(ws1, collect_heading);
+    XLSX.utils.sheet_add_json(ws1, data.collect_eggs_csv, {
+      origin: "A2",
+      skipHeader: true,
+    });
+    XLSX.utils.book_append_sheet(wb, ws1, sheet_name[0]);
+
+    // create sell sheet
+    const ws2: XLSX.WorkSheet = XLSX.utils.json_to_sheet([]);
+    XLSX.utils.sheet_add_aoa(ws2, sell_heading);
+    XLSX.utils.sheet_add_json(ws2, data.sell_eggs_csv, {
+      origin: "A2",
+      skipHeader: true,
+    });
+    XLSX.utils.book_append_sheet(wb, ws2, sheet_name[1]);
+
+    // create accounting sheet
+    const ws3: XLSX.WorkSheet = XLSX.utils.json_to_sheet([]);
+    XLSX.utils.sheet_add_aoa(ws3, acc_heading);
+    XLSX.utils.sheet_add_json(ws3, data.accounting_csv, {
+      origin: "A2",
+      skipHeader: true,
+    });
+    XLSX.utils.book_append_sheet(wb, ws3, sheet_name[2]);
+
+    // export work book
+    XLSX.writeFile(wb, `รายงานฟาร์มไก่ (${moment().format("ll")}).xlsx`);
+  }
+
   return {
     provide: {
       csv: {
-        export: (
+        createSheet: (
           accData: Response[],
           sumEggs: Response[],
           collectEggs: Response[],
@@ -584,6 +633,7 @@ export default defineNuxtPlugin(() => {
             },
           };
         },
+        export: XLSXHandler,
       },
     },
   };

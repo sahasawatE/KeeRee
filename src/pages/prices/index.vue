@@ -208,13 +208,13 @@ export default defineNuxtComponent({
 
         const res_price = await this.$query.get("selling-price");
         if (res_price.length) {
-          const sorted = utils.dateSort(
-            "date",
-            res_price.map((e) => ({ ...e.data })),
-          ) as {
+          const sorted: {
             date: string;
             prices: string[];
-          }[];
+          }[] = await utils.dateSort(
+            "date",
+            res_price.map((e) => ({ ...e.data })),
+          );
 
           this.price_from.date = sorted.at(-1)!.date;
 

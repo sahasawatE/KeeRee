@@ -67,17 +67,21 @@ export const utils = {
     return data;
   },
 
-  dateSort(key: string, arr: any[], format = "DD/MM/YYYY") {
-    const data = arr.map((e) => ({
-      ...e,
-      [key]: moment(e[key] as string, format),
-    }));
+  dateSort(key: string, arr: any[], format = "DD/MM/YYYY"): Promise<any[]> {
+    return new Promise((resolve) => {
+      const data = arr.map((e) => ({
+        ...e,
+        [key]: moment(e[key] as string, format),
+      }));
 
-    const result = data.sort((a, b) => a[key].diff(b[key]));
+      const result = data.sort((a, b) => a[key].diff(b[key]));
 
-    return result.map((e) => ({
-      ...e,
-      [key]: moment(e[key]).format(format),
-    }));
+      resolve(
+        result.map((e) => ({
+          ...e,
+          [key]: moment(e[key]).format(format),
+        })),
+      );
+    });
   },
 };

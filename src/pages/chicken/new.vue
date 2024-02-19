@@ -138,7 +138,7 @@ export default defineNuxtComponent({
           ...e.data,
           id: e.id,
         })) as ChickenSchema[];
-        const sorted = utils.dateSort("date", ck) as ResCk[];
+        const sorted: ResCk[] = await utils.dateSort("date", ck);
 
         const c = sorted.at(-1)!;
 

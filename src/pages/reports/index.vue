@@ -4,10 +4,20 @@
     <div class="d-flex flex-column t-gap-3">
       <span class="t-font-bold t-text-md">ภาพรวมข้อมูล</span>
       <v-row>
-        <v-col v-for="(s, i) in summary" :key="`sum-${i}`" cols="6" md="3">
-          <v-card variant="outlined" color="grey-lighten-2">
+        <v-col v-for="(s, i) in summary" :key="`sum-${i}`" cols="6">
+          <v-card variant="outlined" color="grey-lighten-2 t-h-full">
             <v-card-text class="text-black d-flex flex-column t-gap-2">
-              <span class="text-grey">{{ s.title }}</span>
+              <div class="d-flex flex-row justify-space-between align-center">
+                <span class="text-grey">{{ s.title }}</span>
+                <v-tooltip v-if="s.remark" open-on-click>
+                  <template #activator="{ props }">
+                    <div v-bind="props">
+                      <v-icon>mdi-information-outline</v-icon>
+                    </div>
+                  </template>
+                  <span>{{ s.remark }}</span>
+                </v-tooltip>
+              </div>
               <div
                 class="d-flex flex-row t-gap-2 t-font-bold t-text-md align-baseline"
               >
@@ -20,7 +30,7 @@
       </v-row>
     </div>
     <div class="d-flex flex-column t-gap-3">
-      <span class="t-font-bold t-text-md">จำนวนแผงไข่ไก่ทั้งหมด</span>
+      <span class="t-font-bold t-text-md">จำนวนแผงไข่ไก่</span>
       <v-list :items="sum_egg_groups" :border="false">
         <template #prepend="{ item }">
           <div class="mr-6">
@@ -50,24 +60,6 @@
           </div>
         </v-card-text>
       </v-card>
-    </div>
-    <div class="d-flex flex-column t-gap-3">
-      <span class="t-font-bold t-text-md">น้ำหนักอาหาร</span>
-      <v-list :items="sum_food_weight" :border="false">
-        <template #prepend="{ item }">
-          <div class="mr-6">
-            <v-avatar :color="item.no === 1 ? 'primary' : 'grey-lighten-2'">
-              {{ item.no }}
-            </v-avatar>
-          </div>
-        </template>
-        <template #append="{ item }">
-          <div class="d-flex flex-row align-baseline t-gap-2 t-font-semibold">
-            <span class="t-text-lg">{{ item.amount }}</span>
-            <span>กรัม</span>
-          </div>
-        </template>
-      </v-list>
     </div>
   </div>
 </template>
@@ -120,10 +112,15 @@ export default defineNuxtComponent({
     const weight_sum = ref(0);
 
     const summary = ref([
-      { title: "จำนวนไข่ไก่", amount: 0, unit: "ฟอง" },
-      { title: "จำนวนแผงไข่ไก่", amount: 0, unit: "แผง" },
-      { title: "น้ำหนักไข่ไก่", amount: 0, unit: "กรัม" },
-      { title: "น้ำหนักอาหาร", amount: 0, unit: "กรัม" },
+      {
+        title: "อัตราการออกไข่",
+        amount: 0,
+        unit: "%",
+        remark: "คำนวณเทียบกับจำนวนไข่ที่เก็บได้ของวันก่อนหน้า",
+      },
+      { title: "จำนวนแผงไข่ไก่รวม", amount: 0, unit: "แผง", remark: "" },
+      { title: "น้ำหนักไข่ไก่เฉลี่ย", amount: 0, unit: "กรัม", remark: "" },
+      { title: "น้ำหนักอาหาร", amount: 0, unit: "กรัม", remark: "" },
     ]);
 
     const sum_egg_groups = ref([
@@ -138,16 +135,6 @@ export default defineNuxtComponent({
       { title: "เบอร์ 4", amount: 0, no: 5 },
     ]);
 
-    const sum_food_weight = ref([
-      { title: "", amount: 0, no: 1 },
-      { type: "divider" },
-      { title: "", amount: 0, no: 2 },
-      { type: "divider" },
-      { title: "", amount: 0, no: 3 },
-      { type: "divider" },
-      { title: "", amount: 0, no: 4 },
-    ]);
-
     const store = useStore();
 
     return {
@@ -155,13 +142,16 @@ export default defineNuxtComponent({
       chart_data,
       summary,
       sum_egg_groups,
-      sum_food_weight,
       weight_sum,
     };
   },
   props: {
     chartOptions: {
       type: Object as PropType<ChartOptions>,
+      required: true,
+    },
+    weightAvg: {
+      type: Number,
       required: true,
     },
     weightSum: {
@@ -174,6 +164,10 @@ export default defineNuxtComponent({
     },
     sumEggs: {
       type: Array as PropType<number[][]>,
+      required: true,
+    },
+    eggsPercent: {
+      type: Number,
       required: true,
     },
   },
@@ -193,49 +187,41 @@ export default defineNuxtComponent({
         this.chart_data.datasets[1].data = val.expense;
       },
     },
+    "$props.weightAvg": {
+      immediate: true,
+      deep: true,
+      handler(val: number) {
+        this.summary[2].amount = val;
+      },
+    },
     "$props.weightSum": {
       immediate: true,
       deep: true,
       handler(val: number) {
         this.weight_sum = val;
-        this.summary[2].amount = val;
       },
     },
     "$props.sumEggs": {
       immediate: true,
       deep: true,
-      handler(val: number[][]) {
+      handler(val: number[]) {
         if (val.length) {
-          const no0: number[] = [];
-          const no1: number[] = [];
-          const no2: number[] = [];
-          const no3: number[] = [];
-          const no4: number[] = [];
+          const g = val.map((e) => Math.floor(e / 30));
 
-          val.forEach((e) => {
-            no0.push(e[0]);
-            no1.push(e[1]);
-            no2.push(e[2]);
-            no3.push(e[3]);
-            no4.push(e[4]);
-          });
+          this.summary[1].amount = utils.sum(g);
 
-          const sum = utils.sum([...no0, ...no1, ...no2, ...no3, ...no4]);
-
-          const summary = {
-            indi: sum % 30,
-            group: Math.floor(sum / 30),
-          };
-
-          this.summary[0].amount = summary.indi;
-          this.summary[1].amount = summary.group;
-
-          this.sum_egg_groups[0].amount = Math.floor(utils.sum(no0) / 30);
-          this.sum_egg_groups[2].amount = Math.floor(utils.sum(no1) / 30);
-          this.sum_egg_groups[4].amount = Math.floor(utils.sum(no2) / 30);
-          this.sum_egg_groups[6].amount = Math.floor(utils.sum(no3) / 30);
-          this.sum_egg_groups[8].amount = Math.floor(utils.sum(no4) / 30);
+          this.sum_egg_groups[0].amount = g[0];
+          this.sum_egg_groups[2].amount = g[1];
+          this.sum_egg_groups[4].amount = g[2];
+          this.sum_egg_groups[6].amount = g[3];
+          this.sum_egg_groups[8].amount = g[4];
         }
+      },
+    },
+    "$props.eggsPercent": {
+      immediate: true,
+      handler(val: number) {
+        this.summary[0].amount = val;
       },
     },
     "$props.foodSum": {
@@ -243,23 +229,6 @@ export default defineNuxtComponent({
       deep: true,
       handler(val: FoodSum) {
         this.summary[3].amount = val.sum;
-
-        const sortable = Object.keys(val.row).map((e) => [e, val.row[e]]) as [
-          string,
-          number,
-        ][];
-        const sorted = sortable.sort((a, b) => {
-          return b[1] - a[1];
-        });
-
-        this.sum_food_weight[0].title = `แถว ${sorted[0][0]}`;
-        this.sum_food_weight[0].amount = sorted[0][1];
-        this.sum_food_weight[2].title = `แถว ${sorted[1][0]}`;
-        this.sum_food_weight[2].amount = sorted[1][1];
-        this.sum_food_weight[4].title = `แถว ${sorted[2][0]}`;
-        this.sum_food_weight[4].amount = sorted[2][1];
-        this.sum_food_weight[6].title = `แถว ${sorted[3][0]}`;
-        this.sum_food_weight[6].amount = sorted[3][1];
       },
     },
   },
