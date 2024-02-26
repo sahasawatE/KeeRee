@@ -45,13 +45,22 @@
     <v-expand-transition>
       <v-card v-show="date_range === '3'">
         <v-card-text>
-          <v-select
-            v-model="monthModel"
-            :items="monthOptions"
-            hide-details
-            variant="outlined"
-            label="เลือกเดือน"
-          ></v-select>
+          <v-row>
+            <v-col>
+              <common-datepicker
+                v-model="date.start"
+                label="วันที่เริ่มต้น"
+                :min="minStartDate"
+              />
+            </v-col>
+            <v-col>
+              <common-datepicker
+                v-model="date.end"
+                label="วันที่สิ้นสุด"
+                :min="minEndDate"
+              />
+            </v-col>
+          </v-row>
         </v-card-text>
       </v-card>
     </v-expand-transition>
@@ -71,6 +80,7 @@
       :sum-eggs="sum_eggs_sum"
       :eggs-percent="eggs_percent"
       :egg-remain="egg_remain"
+      :chicken-dead="percentDead"
     />
   </div>
 </template>
@@ -84,6 +94,7 @@ import { useStore } from "~/stores";
 import type { Response } from "~/types/query.type";
 import type { ResponseAcc } from "~/types/accounting.type";
 import type { SumSchema } from "~/types/selling.type";
+import type { ChickenSchema } from "~/types/chicken.type";
 
 type SelectDataRange = "0" | "1" | "2" | "3";
 type ChartOptions = {
@@ -142,6 +153,8 @@ export default defineNuxtComponent({
       },
       sum: 0,
     });
+    const chicken = ref<ChickenSchema>();
+    const chicken_first = ref<ChickenSchema>();
 
     return {
       store,
@@ -161,6 +174,8 @@ export default defineNuxtComponent({
       selling,
       eggs_percent,
       egg_remain,
+      chicken,
+      chicken_first,
     };
   },
   async mounted() {
@@ -182,6 +197,15 @@ export default defineNuxtComponent({
       const selling = await this.$query.get("selling");
       this.selling = selling;
 
+      const chicken = await this.$query.get("chicken");
+      const ck: ChickenSchema[] = await utils.dateSort(
+        "date",
+        chicken.map((e) => e.data),
+      );
+      const c = ck.at(-1);
+      this.chicken_first = ck[0];
+      this.chicken = c;
+
       this.filterAcc();
       this.filterFood();
       this.filterSumEggs();
@@ -193,6 +217,35 @@ export default defineNuxtComponent({
     }
   },
   computed: {
+    percentDead() {
+      if (this.chicken_first) {
+        const data = this.chicken_first.row;
+        const sum_in = utils.sum([
+          Number(data.a.in),
+          Number(data.b.in),
+          Number(data.c.in),
+          Number(data.d.in),
+        ]);
+        const sum_out = utils.sum([
+          Number(data.a.out),
+          Number(data.b.out),
+          Number(data.c.out),
+          Number(data.d.out),
+        ]);
+
+        const percent = Math.floor((sum_out * 10000) / sum_in) / 100;
+
+        return percent;
+      }
+
+      return 0;
+    },
+    minStartDate() {
+      return moment().subtract(3, "M").toDate();
+    },
+    minEndDate() {
+      return moment(this.date.start, "DD/MM/YYYY").toDate();
+    },
     displayDate() {
       moment.locale("th");
       switch (this.date_range) {
@@ -309,6 +362,28 @@ export default defineNuxtComponent({
 
       return filter_data;
     },
+    calSumChicken() {
+      const chicken = [];
+      const c = this.chicken;
+      if (c) {
+        chicken.push(
+          Number(c.row.a.in),
+          Number(c.row.b.in),
+          Number(c.row.c.in),
+          Number(c.row.d.in),
+        );
+        chicken.push(
+          -Number(c.row.a.out),
+          -Number(c.row.b.out),
+          -Number(c.row.c.out),
+          -Number(c.row.d.out),
+        );
+      }
+
+      const ck_sum = utils.sum(chicken);
+
+      return ck_sum;
+    },
     async filterSumEggs() {
       const filter_data = this.filtering(this.sum_eggs, "record_date");
       const data = filter_data.map((e) => e.data) as SumSchema[];
@@ -316,15 +391,10 @@ export default defineNuxtComponent({
         const sorted: SumSchema[] = await utils.dateSort("record_date", data);
         const s = sorted.at(-1);
 
-        const latest = moment(s!.record_date, "DD/MM/YYYY");
-        const bf = data.find(
-          (e) => e.record_date === latest.subtract(1, "d").format("DD/MM/YYYY"),
-        );
-
-        const yd_sum = utils.sum(bf!.sum_collect);
         const td_sum = utils.sum(s!.sum_collect);
+        const ck_sum = this.calSumChicken();
 
-        this.eggs_percent = Math.floor((td_sum / yd_sum) * 10000) / 100;
+        this.eggs_percent = Math.floor((td_sum / ck_sum) * 10000) / 100 || 0;
 
         const sum_data = [
           utils.sum([s!.from_yesterday[0], s!.sum_collect[0], -s!.sum_sell[0]]),
@@ -372,12 +442,14 @@ export default defineNuxtComponent({
       this.food_sum.row.C = utils.sum(c);
       this.food_sum.row.D = utils.sum(d);
 
-      this.food_sum.sum = utils.sum([
+      const ck_sum = this.calSumChicken();
+      const foods = utils.sum([
         this.food_sum.row.A,
         this.food_sum.row.B,
         this.food_sum.row.C,
         this.food_sum.row.D,
       ]);
+      this.food_sum.sum = Math.floor((foods / ck_sum) * 100) / 100 || 0;
     },
     filterAcc() {
       const filter_data = this.filtering(this.acc_data, "date");

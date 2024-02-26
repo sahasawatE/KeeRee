@@ -9,13 +9,21 @@
         class="main-menu"
         rounded="lg"
         border
-        append-icon="mdi-chevron-right"
         @click="handleClickMenu(menu.to)"
       >
         <template #prepend>
           <v-avatar rounded="0">
             <v-img :src="`/icons/${menu.icon}`" width="35"></v-img>
           </v-avatar>
+        </template>
+        <template #append>
+          <v-badge
+            v-if="i === menus.length - 1 && store.canReset"
+            color="warning"
+            content="!"
+            inline
+          ></v-badge>
+          <v-icon v-else>mdi-chevron-right</v-icon>
         </template>
         <template #title>
           <span>{{ menu.title }}</span>
@@ -25,6 +33,15 @@
         </template>
       </v-list-item>
     </v-list>
+
+    <v-btn
+      v-if="store.canReset"
+      variant="tonal"
+      color="error"
+      prepend-icon="mdi-delete"
+    >
+      Reset ข้อมูล
+    </v-btn>
   </div>
 </template>
 
@@ -102,37 +119,47 @@ export default defineNuxtComponent({
       this.$router.push(to);
     },
     async calSum() {
-      const today = moment().format("DD/MM/YYYY");
-      const td = await this.$query.get("eggs-sum", "record_date", "==", today);
-      if (!td.length) {
-        const yd = await this.$db.getLastSum();
-        const yd_data = {
-          sum_collect: [] as number[],
-          sum_sell: [] as number[],
-          from_yesterday: [] as number[],
-        };
-        if (!yd.length) {
-          yd_data.sum_collect = [0, 0, 0, 0, 0];
-          yd_data.sum_sell = [0, 0, 0, 0, 0];
-          yd_data.from_yesterday = [0, 0, 0, 0, 0];
-        } else {
-          const data = yd[0].data;
-          yd_data.sum_collect = data.sum_collect;
-          yd_data.sum_sell = data.sum_sell;
-          yd_data.from_yesterday = data.from_yesterday;
+      try {
+        const today = moment().format("DD/MM/YYYY");
+        const td = await this.$query.get(
+          "eggs-sum",
+          "record_date",
+          "==",
+          today,
+        );
+        if (!td.length) {
+          const yd = await this.$db.getLastSum();
+          const yd_data = {
+            sum_collect: [] as number[],
+            sum_sell: [] as number[],
+            from_yesterday: [] as number[],
+          };
+          if (!yd.length) {
+            yd_data.sum_collect = [0, 0, 0, 0, 0];
+            yd_data.sum_sell = [0, 0, 0, 0, 0];
+            yd_data.from_yesterday = [0, 0, 0, 0, 0];
+          } else {
+            const data = yd[0].data;
+            yd_data.sum_collect = data.sum_collect;
+            yd_data.sum_sell = data.sum_sell;
+            yd_data.from_yesterday = data.from_yesterday;
+          }
+          if (td.length) {
+            this.sum_today_id = td[0].id;
+          }
+          const yd_remain = yd_data.from_yesterday.map((e, i) => {
+            return utils.sum([e, yd_data.sum_collect[i], -yd_data.sum_sell[i]]);
+          });
+          await this.$query.post("eggs-sum", {
+            sum_collect: [0, 0, 0, 0, 0],
+            sum_sell: [0, 0, 0, 0, 0],
+            record_date: today,
+            from_yesterday: yd_remain,
+            trash_eggs: 0,
+          });
         }
-        if (td.length) {
-          this.sum_today_id = td[0].id;
-        }
-        const yd_remain = yd_data.from_yesterday.map((e, i) => {
-          return utils.sum([e, yd_data.sum_collect[i], -yd_data.sum_sell[i]]);
-        });
-        await this.$query.post("eggs-sum", {
-          sum_collect: [0, 0, 0, 0, 0],
-          sum_sell: [0, 0, 0, 0, 0],
-          record_date: today,
-          from_yesterday: yd_remain,
-        });
+      } catch (err) {
+        this.$dialog.toast.error(err as string);
       }
     },
   },

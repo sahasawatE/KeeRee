@@ -8,6 +8,7 @@ type EggSchema = {
   egg_number: number[];
   weight_avg: number;
   weight_sum: number;
+  trash_eggs: number;
   date: string;
 };
 

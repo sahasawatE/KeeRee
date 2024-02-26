@@ -9,6 +9,7 @@ type SumSchema = {
   sum_collect: number[];
   from_yesterday: number[];
   record_date: string;
+  trash_eggs: number;
 };
 
 type SumDetails = {

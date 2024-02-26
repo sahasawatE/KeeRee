@@ -35,9 +35,18 @@
         </common-data-table>
       </v-form>
     </div>
-    <v-btn @click="handleClickSave">
-      {{ has_data ? "แก้ไขข้อมูล" : "บันทึก" }}</v-btn
-    >
+    <div class="d-flex flex-row t-gap-2">
+      <div class="t-flex-1">
+        <v-btn color="warning" width="100%" @click="handleChangeChicken">
+          เปลี่ยนไก่ชุดใหม่
+        </v-btn>
+      </div>
+      <div class="t-flex-1">
+        <v-btn width="100%" @click="handleClickSave">
+          {{ has_data ? "แก้ไขข้อมูล" : "บันทึก" }}
+        </v-btn>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -130,28 +139,33 @@ export default defineNuxtComponent({
   },
   methods: {
     async init() {
-      this.store.setLoading(true);
-      const res_chicken = await this.$query.get("chicken");
-      this.has_data = res_chicken.length > 0;
-      if (res_chicken.length) {
-        const ck = res_chicken.map((e) => ({
-          ...e.data,
-          id: e.id,
-        })) as ChickenSchema[];
-        const sorted: ResCk[] = await utils.dateSort("date", ck);
+      try {
+        this.store.setLoading(true);
+        const res_chicken = await this.$query.get("chicken");
+        this.has_data = res_chicken.length > 0;
+        if (res_chicken.length) {
+          const ck = res_chicken.map((e) => ({
+            ...e.data,
+            id: e.id,
+          })) as ChickenSchema[];
+          const sorted: ResCk[] = await utils.dateSort("date", ck);
 
-        const c = sorted.at(-1)!;
+          const c = sorted.at(-1)!;
 
-        this.edit_id = c.id;
-        this.last_update = c.date;
+          this.edit_id = c.id;
+          this.last_update = c.date;
 
-        this.table.data[0].chicken = c.row.a;
-        this.table.data[1].chicken = c.row.b;
-        this.table.data[2].chicken = c.row.c;
-        this.table.data[3].chicken = c.row.d;
-        this.table.data[4].chicken.in = this.calSum();
+          this.table.data[0].chicken = c.row.a;
+          this.table.data[1].chicken = c.row.b;
+          this.table.data[2].chicken = c.row.c;
+          this.table.data[3].chicken = c.row.d;
+          this.table.data[4].chicken.in = this.calSum();
+        }
+      } catch (err) {
+        this.$dialog.toast.error(err as string);
+      } finally {
+        this.store.setLoading(false);
       }
-      this.store.setLoading(false);
     },
     calSum() {
       const ck = this.table.data
@@ -162,6 +176,26 @@ export default defineNuxtComponent({
     handleInputChicken(e: string, i: number) {
       this.table.data[i].chicken.in = e;
       this.table.data[4].chicken.in = this.calSum();
+    },
+    handleChangeChicken() {
+      this.$dialog.confirm.open({
+        title: "ยืนยันการเปลี่ยนไก่",
+        details:
+          "ถ้าหากคุณดาวน์โหลดข้อมูลแล้ว ให้กด 'ตกลง' ถ้าหากว่ายังไม่ได้ดาวน์โหลด ให้ทำการดาวน์โหลดข้อมูลก่อน เพราะข้อมูลจะต้องถูก reset",
+        onConfirm: this.onConfirmChangeChicken,
+      });
+    },
+    async onConfirmChangeChicken() {
+      // ต้องมีการกำหนด flow ใหม่
+      try {
+        this.store.setLoading(true);
+        await this.$db.reset();
+      } catch (err) {
+        this.$dialog.toast.error(err as string);
+      } finally {
+        this.store.setLoading(false);
+        this.$router.back();
+      }
     },
     async handleClickSave() {
       if (this.has_data) {
@@ -183,7 +217,7 @@ export default defineNuxtComponent({
               },
             };
 
-            if (this.edit_id) {
+            if (this.edit_id && param.date === this.last_update) {
               await this.$query.update("chicken", this.edit_id, param);
             } else {
               await this.$query.post("chicken", param);

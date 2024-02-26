@@ -6,14 +6,19 @@
     >
       <div class="d-flex flex-row justify-center align-center t-gap-4">
         <span class="t-text-lg">สรุปยอดขายไข่ไก่</span>
-        <v-btn
-          icon="mdi-export-variant"
-          variant="tonal"
-          color="grey-darken-1"
-          slim
-          size="32"
-          @click="$emit('export')"
-        ></v-btn>
+        <v-badge color="warning" :model-value="store.getCanReset">
+          <template #badge>
+            <div>!</div>
+          </template>
+          <v-btn
+            icon="mdi-export-variant"
+            variant="tonal"
+            color="grey-darken-1"
+            slim
+            size="32"
+            @click="$emit('export')"
+          ></v-btn>
+        </v-badge>
       </div>
       <span class="text-center text-grey-darken-1">
         {{ $props.displayDate }}
@@ -82,8 +87,16 @@
 
 <script lang="ts">
 import type { PropType } from "vue";
+import { useStore } from "~/stores";
 
 export default defineNuxtComponent({
+  setup() {
+    const store = useStore();
+
+    return {
+      store,
+    };
+  },
   props: {
     displayDate: {
       type: String,

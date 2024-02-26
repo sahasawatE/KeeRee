@@ -7,9 +7,28 @@
       </span>
     </v-card-text>
     <v-card-actions class="t-pointer-events-auto">
-      <v-btn variant="flat" color="primary" block @click="handleClickConfirm">
-        {{ $props.confirmText }}
-      </v-btn>
+      <div class="d-flex flex-row t-gap-2 t-w-full">
+        <div class="t-flex-1">
+          <v-btn
+            variant="outlined"
+            width="100%"
+            color="error"
+            @click="handleClickCancel"
+          >
+            {{ $props.cancelText }}
+          </v-btn>
+        </div>
+        <div class="t-flex-1">
+          <v-btn
+            variant="flat"
+            width="100%"
+            color="primary"
+            @click="handleClickConfirm"
+          >
+            {{ $props.confirmText }}
+          </v-btn>
+        </div>
+      </div>
     </v-card-actions>
   </v-card>
 </template>
@@ -30,7 +49,15 @@ export default defineNuxtComponent({
       type: String,
       required: true,
     },
+    cancelText: {
+      type: String,
+      required: true,
+    },
     onConfirm: {
+      type: Function,
+      required: true,
+    },
+    onCancel: {
       type: Function,
       required: true,
     },
@@ -38,6 +65,10 @@ export default defineNuxtComponent({
   methods: {
     handleClickConfirm() {
       this.$props.onConfirm();
+      popModal();
+    },
+    handleClickCancel() {
+      this.$props.onCancel();
       popModal();
     },
   },

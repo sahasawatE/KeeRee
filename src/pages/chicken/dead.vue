@@ -130,28 +130,33 @@ export default defineNuxtComponent({
   },
   methods: {
     async init() {
-      this.store.setLoading(true);
-      const res_chicken = await this.$query.get("chicken");
-      this.has_data = res_chicken.length > 0;
-      if (res_chicken.length) {
-        const ck = res_chicken.map((e) => ({
-          ...e.data,
-          id: e.id,
-        })) as ChickenSchema[];
-        const sorted: ResCk[] = await utils.dateSort("date", ck);
+      try {
+        this.store.setLoading(true);
+        const res_chicken = await this.$query.get("chicken");
+        this.has_data = res_chicken.length > 0;
+        if (res_chicken.length) {
+          const ck = res_chicken.map((e) => ({
+            ...e.data,
+            id: e.id,
+          })) as ChickenSchema[];
+          const sorted: ResCk[] = await utils.dateSort("date", ck);
 
-        const c = sorted.at(-1)!;
+          const c = sorted.at(-1)!;
 
-        this.edit_id = c.id;
-        this.last_update = c.date;
+          this.edit_id = c.id;
+          this.last_update = c.date;
 
-        this.table.data[0].chicken = c.row.a;
-        this.table.data[1].chicken = c.row.b;
-        this.table.data[2].chicken = c.row.c;
-        this.table.data[3].chicken = c.row.d;
-        this.table.data[4].chicken.in = this.calSum();
+          this.table.data[0].chicken = c.row.a;
+          this.table.data[1].chicken = c.row.b;
+          this.table.data[2].chicken = c.row.c;
+          this.table.data[3].chicken = c.row.d;
+          this.table.data[4].chicken.in = this.calSum();
+        }
+      } catch (err) {
+        this.$dialog.toast.error(err as string);
+      } finally {
+        this.store.setLoading(false);
       }
-      this.store.setLoading(false);
     },
     calSum() {
       const ck = this.table.data

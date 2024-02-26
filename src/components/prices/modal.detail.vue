@@ -27,7 +27,7 @@ export default defineNuxtComponent({
     const table_headers: HeaderProp = [
       {
         key: "number",
-        title: "เบอนร์ไข่ไก่",
+        title: "เบอร์ไข่ไก่",
       },
       {
         key: "group",

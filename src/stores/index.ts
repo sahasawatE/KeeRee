@@ -1,10 +1,11 @@
 import { defineStore } from "pinia";
 
 export const useStore = defineStore("main-store", {
-  state: (): { loading: boolean; menuTitle: string } => {
+  state: (): { loading: boolean; menuTitle: string; canReset: boolean } => {
     return {
       loading: false,
       menuTitle: "",
+      canReset: false,
     };
   },
 
@@ -15,6 +16,9 @@ export const useStore = defineStore("main-store", {
     setMenuTitle(title: string) {
       this.menuTitle = title;
     },
+    setCanReset(can: boolean) {
+      this.canReset = can;
+    },
   },
 
   getters: {
@@ -23,6 +27,9 @@ export const useStore = defineStore("main-store", {
     },
     getMenuTitle: (state): string => {
       return state.menuTitle;
+    },
+    getCanReset: (state): boolean => {
+      return state.canReset;
     },
   },
 });

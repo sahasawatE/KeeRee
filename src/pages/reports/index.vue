@@ -86,7 +86,7 @@
           <div class="d-flex flex-row justify-space-between">
             <span class="d-flex flex-row align-center">จำนวนไข่ทั้งหมด</span>
             <div class="d-flex flex-row align-baseline t-gap-2 t-font-semibold">
-              <span class="t-text-lg">0</span>
+              <span class="t-text-lg">{{ remain_indi_eggs }}</span>
               <span>ฟอง</span>
             </div>
           </div>
@@ -94,31 +94,39 @@
       </v-card>
     </div>
     <div class="d-flex flex-column t-gap-3">
-      <span class="t-font-bold t-text-md">ภาพรวมข้อมูลของไก่</span>
-      <v-row>
-        <v-col v-for="(c, i) in chicken" :key="`chicken-${i}`">
-          <v-card variant="outlined" color="grey-lighten-2">
-            <v-card-text class="text-black d-flex flex-column t-gap-2">
-              <div class="d-flex flex-row justify-space-between align-center">
-                <span class="text-grey">{{ c.title }}</span>
-              </div>
-              <div
-                class="d-flex flex-row t-gap-2 t-font-bold t-text-md align-baseline"
-              >
-                <span class="t-text-lg">{{ c.value }} %</span>
-              </div>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
+      <span class="t-font-bold t-text-md">จำนวนไข่ที่ขายแล้ว</span>
+      <v-card variant="outlined" color="grey-lighten-2">
+        <v-card-text class="text-black">
+          <div class="d-flex flex-row justify-space-between">
+            <span class="d-flex flex-row align-center">จำนวนไข่ที่ขายแล้ว</span>
+            <div class="d-flex flex-row align-baseline t-gap-2 t-font-semibold">
+              <span class="t-text-lg">{{ sumSellEggsIndi }}</span>
+              <span>แผง</span>
+            </div>
+          </div>
+        </v-card-text>
+      </v-card>
     </div>
     <div class="d-flex flex-column t-gap-3">
-      <span class="t-font-bold t-text-md">การออกไข่</span>
+      <span class="t-font-bold t-text-md text-error">
+        อัตราการเสียชีวิตของไก่
+      </span>
+      <v-card variant="outlined" color="grey-lighten-2">
+        <v-card-text
+          class="text-black d-flex flex-row justify-space-between align-center"
+        >
+          <span>อัตราการเสียชีวิตของไก่ตั้งแต่นำไก่เข้ามา</span>
+          <span class="t-text-lg t-font-bold text-error">
+            {{ chicken_dead }} %
+          </span>
+        </v-card-text>
+      </v-card>
     </div>
   </div>
 </template>
 
 <script lang="ts">
+import moment from "moment-with-locales-es6";
 import { BarChart } from "vue-chart-3";
 import { Chart, registerables } from "chart.js";
 
@@ -170,11 +178,23 @@ export default defineNuxtComponent({
         title: "อัตราการออกไข่",
         amount: 0,
         unit: "%",
-        remark: "คำนวณเทียบกับจำนวนไข่ที่เก็บได้ของวันก่อนหน้า",
+        remark: `ไก่ 1 ตัวออกไข่ไม่เกิน 1 ฟองต่อวัน (วันที่ ${moment().format(
+          "ll",
+        )})`,
       },
       { title: "จำนวนแผงไข่ไก่รวม", amount: 0, unit: "แผง", remark: "" },
-      { title: "น้ำหนักไข่ไก่เฉลี่ย", amount: 0, unit: "กรัม", remark: "" },
-      { title: "น้ำหนักอาหาร", amount: 0, unit: "กรัม", remark: "" },
+      {
+        title: "น้ำหนักไข่ไก่เฉลี่ย",
+        amount: 0,
+        unit: "กรัม",
+        remark: "",
+      },
+      {
+        title: "น้ำหนักอาหารเฉลี่ย",
+        amount: 0,
+        unit: "กรัม",
+        remark: "ต่อไก่ 1 ตัว",
+      },
     ]);
 
     const sum_egg_groups = ref([
@@ -201,16 +221,14 @@ export default defineNuxtComponent({
       { title: "เบอร์ 4", amount: 0, no: 5 },
     ]);
 
-    const chicken = ref([
-      {
-        title: "อัตราการเพิ่มระหว่างรุ่น",
-        value: 0,
-      },
-      {
-        title: "อัตราการเสียชีวิตของไก่",
-        value: 0,
-      },
-    ]);
+    const chicken_dead = ref(0);
+
+    const remain_indi_eggs = ref(0);
+
+    const temp_eggs = ref({
+      remain: [] as number[],
+      sum_eggs: [] as number[],
+    });
 
     const store = useStore();
 
@@ -220,8 +238,10 @@ export default defineNuxtComponent({
       summary,
       sum_egg_groups,
       weight_sum,
-      chicken,
+      chicken_dead,
       remain_egg_groups,
+      remain_indi_eggs,
+      temp_eggs,
     };
   },
   props: {
@@ -253,12 +273,23 @@ export default defineNuxtComponent({
       type: Number,
       required: true,
     },
+    chickenDead: {
+      type: Number,
+      required: true,
+    },
   },
   components: {
     BarChart,
   },
   mounted() {
     this.store.setMenuTitle("รายงานการขาย");
+  },
+  computed: {
+    sumSellEggsIndi() {
+      const { remain, sum_eggs } = this.temp_eggs;
+      const sum = utils.sum([...remain, ...sum_eggs.map((e) => -e)]);
+      return sum / 30;
+    },
   },
   watch: {
     "$props.chartOptions": {
@@ -290,6 +321,10 @@ export default defineNuxtComponent({
       handler(val: number[]) {
         if (val.length) {
           const g = val.map((e) => Math.floor(e / 30));
+          const indi = utils.sum(val);
+          this.remain_indi_eggs = indi;
+
+          this.temp_eggs.sum_eggs = val;
 
           this.sum_egg_groups[0].amount = g[0];
           this.sum_egg_groups[2].amount = g[1];
@@ -321,12 +356,20 @@ export default defineNuxtComponent({
 
           this.summary[1].amount = utils.sum(g);
 
+          this.temp_eggs.remain = val;
+
           this.remain_egg_groups[0].amount = g[0];
           this.remain_egg_groups[2].amount = g[1];
           this.remain_egg_groups[4].amount = g[2];
           this.remain_egg_groups[6].amount = g[3];
           this.remain_egg_groups[8].amount = g[4];
         }
+      },
+    },
+    "$props.chickenDead": {
+      immediate: true,
+      handler(val: number) {
+        this.chicken_dead = val;
       },
     },
   },
