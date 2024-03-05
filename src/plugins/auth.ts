@@ -29,6 +29,7 @@ export default defineNuxtPlugin((_app) => {
           return new Promise<boolean>((resolve) => {
             setTimeout(() => {
               const ok = phone === valid_phone;
+              console.log(phone, valid_phone);
               if (ok) {
                 createToken(phone);
               } else {
