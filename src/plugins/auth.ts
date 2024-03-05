@@ -1,10 +1,12 @@
 import * as jose from "jose";
 
-const valid_phone = "1231231231";
-const secret = new TextEncoder().encode("hokisawsomewow6969");
-
 export default defineNuxtPlugin((_app) => {
   const { $router } = useNuxtApp();
+
+  const config = useRuntimeConfig().public;
+
+  const valid_phone = config.validPhone;
+  const secret = new TextEncoder().encode(config.jwt);
 
   function getRandomArbitrary(min = 1, max = 3) {
     return Math.random() * (max - min) + min;

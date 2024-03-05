@@ -43,4 +43,10 @@ export default defineNuxtConfig({
       appId: process.env.AppID,
     },
   },
+  runtimeConfig: {
+    public: {
+      validPhone: process.env.ValidPhone,
+      jwt: process.env.JWT,
+    },
+  },
 });

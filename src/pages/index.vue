@@ -2,7 +2,7 @@
   <div class="t-h-full d-flex flex-column align-center">
     <v-form ref="login-form" lazy-validation @submit.prevent="handleLogin">
       <v-row justify="center">
-        <v-col cols="6">
+        <v-col cols="12">
           <div class="d-flex flex-column align-center">
             <v-img
               src="/logo/logo.png"
@@ -12,6 +12,34 @@
               alt=""
               class="rounded-circle"
             ></v-img>
+            <div
+              class="d-flex flex-row justify-space-between pt-4 align-center t-w-full"
+            >
+              <v-img src="/logo/CPF.jpg" height="80" width="80" alt=""></v-img>
+              <v-img src="/logo/CPF2.png" height="80" width="80" alt=""></v-img>
+              <v-img
+                src="/logo/cp_100.png"
+                height="80"
+                width="80"
+                alt=""
+              ></v-img>
+            </div>
+          </div>
+        </v-col>
+        <v-col cols="12">
+          <div class="d-flex flex-column t-gap-3 t-text-center">
+            <span class="text-success t-text-sm">
+              โปรแกรมบริหารจัดการฟาร์มไก่ไข่คีรี
+            </span>
+            <span class="text-success t-text-sm">
+              โครงการเลี้ยงไข่ไก่เพื่ออาหารกลางวันนักเรียน
+            </span>
+            <span class="text-primary t-font-bold">
+              โรงเรียนคีรีศรีสาครวิทยา
+            </span>
+            <span class="t-text-sm">
+              สำนักงานเขตพื้นที่การศึกษาประถมศึกษาตราด
+            </span>
           </div>
         </v-col>
         <v-col cols="12">
