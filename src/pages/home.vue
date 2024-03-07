@@ -100,7 +100,7 @@ export default defineNuxtComponent({
         },
         {
           title: "บันทึกไก่เสียชีวิต",
-          sub: "การรับไก่นำไก่ออก",
+          sub: "การนำไก่ออก",
           icon: "/chicken-dead.png",
           to: "/chicken/dead",
         },

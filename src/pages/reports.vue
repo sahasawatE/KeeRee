@@ -93,8 +93,9 @@ import { useStore } from "~/stores";
 
 import type { Response } from "~/types/query.type";
 import type { ResponseAcc } from "~/types/accounting.type";
-import type { SumSchema } from "~/types/selling.type";
+import type { SellingSchema, SumSchema } from "~/types/selling.type";
 import type { ChickenSchema } from "~/types/chicken.type";
+import type { EggSchema } from "~/types/egg.type";
 
 type SelectDataRange = "0" | "1" | "2" | "3";
 type ChartOptions = {
@@ -210,6 +211,7 @@ export default defineNuxtComponent({
       this.filterFood();
       this.filterSumEggs();
       this.filterCollectEggss();
+      this.filterEggSelling();
     } catch (err) {
       this.$dialog.toast.error(err as string);
     } finally {
@@ -386,15 +388,30 @@ export default defineNuxtComponent({
     },
     async filterSumEggs() {
       const filter_data = this.filtering(this.sum_eggs, "record_date");
+      const filter_collect = this.filtering(this.collect_eggs, "date");
       const data = filter_data.map((e) => e.data) as SumSchema[];
-      if (data.length) {
-        const sorted: SumSchema[] = await utils.dateSort("record_date", data);
+      const collect = filter_collect.map((e) => e.data) as EggSchema[];
+
+      if (collect.length) {
+        const sorted: EggSchema[] = await utils.dateSort("date", collect);
         const s = sorted.at(-1);
 
-        const td_sum = utils.sum(s!.sum_collect);
+        const td_sum = utils.sum([
+          s!.amount.a,
+          s!.amount.b,
+          s!.amount.c,
+          s!.amount.d,
+        ]);
         const ck_sum = this.calSumChicken();
 
         this.eggs_percent = Math.floor((td_sum / ck_sum) * 10000) / 100 || 0;
+      } else {
+        this.eggs_percent = 0;
+      }
+
+      if (data.length) {
+        const sorted: SumSchema[] = await utils.dateSort("record_date", data);
+        const s = sorted.at(-1);
 
         const sum_data = [
           utils.sum([s!.from_yesterday[0], s!.sum_collect[0], -s!.sum_sell[0]]),
@@ -406,7 +423,6 @@ export default defineNuxtComponent({
         this.sum_eggs_sum = sum_data;
       } else {
         this.sum_eggs_sum = [0, 0, 0, 0, 0];
-        this.eggs_percent = 0;
       }
     },
     filterCollectEggss() {
@@ -424,6 +440,16 @@ export default defineNuxtComponent({
         100;
       this.weight_sum = utils.sum(filter_data.map((e) => e.data.weight_sum));
     },
+    filterEggSelling() {
+      const filter_data = this.filtering(this.selling, "date");
+      const selling = filter_data.map((e) => e.data) as SellingSchema[];
+
+      if (selling.length) {
+        const sell_price = selling.map((e) => e.eggs.map((p) => p.price));
+        const sum_sell = utils.sum(sell_price.flat());
+        this.accounting_sum.sum = sum_sell;
+      }
+    },
     filterFood() {
       const filter_data = this.filtering(this.food, "date");
       const a: number[] = [];
@@ -431,10 +457,10 @@ export default defineNuxtComponent({
       const c: number[] = [];
       const d: number[] = [];
       filter_data.forEach((e) => {
-        a.push(e.data.weight.a);
-        b.push(e.data.weight.b);
-        c.push(e.data.weight.c);
-        d.push(e.data.weight.d);
+        a.push(Number(e.data.weight.a) / 1000);
+        b.push(Number(e.data.weight.b) / 1000);
+        c.push(Number(e.data.weight.c) / 1000);
+        d.push(Number(e.data.weight.d) / 1000);
       });
 
       this.food_sum.row.A = utils.sum(a);
@@ -474,10 +500,6 @@ export default defineNuxtComponent({
 
       this.accounting_sum.expense = utils.sum(expense);
       this.accounting_sum.receive = utils.sum(receive);
-      this.accounting_sum.sum = utils.sum([
-        -this.accounting_sum.expense,
-        this.accounting_sum.receive,
-      ]);
 
       this.createDataSet(dates, expense, receive);
     },

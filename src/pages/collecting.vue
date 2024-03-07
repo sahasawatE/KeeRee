@@ -150,12 +150,12 @@ export default defineNuxtComponent({
 
     const headers_eggs_number: HeaderProp = [
       { key: "column", title: "เบอร์ไข่ไก่" },
-      { key: "unit", title: "ฟอง", align: "end", width: "50%" },
+      { key: "unit", title: "แผง", align: "end", width: "50%" },
     ];
 
     const headers_food: HeaderProp = [
       { key: "column", title: "แถวไก่" },
-      { key: "unit", title: "กรัม", align: "end", width: "50%" },
+      { key: "unit", title: "กิโลกรัม", align: "end", width: "50%" },
     ];
 
     const table_eggs = ref({
@@ -337,23 +337,23 @@ export default defineNuxtComponent({
         ]),
       );
 
-      this.table_eggs_number.data[0].unit = String(data_egg.egg_number[0]);
-      this.table_eggs_number.data[1].unit = String(data_egg.egg_number[1]);
-      this.table_eggs_number.data[2].unit = String(data_egg.egg_number[2]);
-      this.table_eggs_number.data[3].unit = String(data_egg.egg_number[3]);
-      this.table_eggs_number.data[4].unit = String(data_egg.egg_number[4]);
+      this.table_eggs_number.data[0].unit = String(data_egg.egg_number[0] / 30);
+      this.table_eggs_number.data[1].unit = String(data_egg.egg_number[1] / 30);
+      this.table_eggs_number.data[2].unit = String(data_egg.egg_number[2] / 30);
+      this.table_eggs_number.data[3].unit = String(data_egg.egg_number[3] / 30);
+      this.table_eggs_number.data[4].unit = String(data_egg.egg_number[4] / 30);
 
-      this.table_food.data[0].unit = String(data_food.weight.a);
-      this.table_food.data[1].unit = String(data_food.weight.b);
-      this.table_food.data[2].unit = String(data_food.weight.c);
-      this.table_food.data[3].unit = String(data_food.weight.d);
+      this.table_food.data[0].unit = String(data_food.weight.a / 1000);
+      this.table_food.data[1].unit = String(data_food.weight.b / 1000);
+      this.table_food.data[2].unit = String(data_food.weight.c / 1000);
+      this.table_food.data[3].unit = String(data_food.weight.d / 1000);
       this.table_food.data[4].unit = String(
         utils.sum([
           data_food.weight.a,
           data_food.weight.b,
           data_food.weight.c,
           data_food.weight.d,
-        ]),
+        ]) / 1000,
       );
 
       this.calEggSum();
@@ -380,9 +380,9 @@ export default defineNuxtComponent({
 
       const temp = this.table_food.data
         .filter((e) => e.column !== "รวมทั้งหมด")
-        .map((e) => parseInt(e.unit) || 0);
+        .map((e) => (Number(e.unit) || 0) * 1000);
 
-      this.table_food.data[4].unit = String(utils.sum(temp));
+      this.table_food.data[4].unit = String(utils.sum(temp) / 1000);
     },
     handleInputEggsNumberUnit(e: string, i: number) {
       this.table_eggs_number.data[i].unit = e;
@@ -406,10 +406,10 @@ export default defineNuxtComponent({
         .map((e) => parseFloat(e.unit))
         .filter((_e, i) => i !== 4);
       const egg_number = this.table_eggs_number.data
-        .map((e) => parseInt(e.unit))
+        .map((e) => parseInt(e.unit) * 30)
         .filter((_e, i) => i !== 5);
       const food = this.table_food.data
-        .map((e) => parseFloat(e.unit))
+        .map((e) => parseFloat(e.unit) * 1000)
         .filter((_e, i) => i !== 4);
       const weight_sum = parseFloat(this.form.weight_sum);
       const trash_eggs = Number(this.form.trash_eggs);

@@ -192,7 +192,7 @@ export default defineNuxtComponent({
       {
         title: "น้ำหนักอาหารเฉลี่ย",
         amount: 0,
-        unit: "กรัม",
+        unit: "กิโลกรัมกรัม",
         remark: "ต่อไก่ 1 ตัว",
       },
     ]);

@@ -12,8 +12,8 @@
           >
             <span class="t-text-lg">{{ displayEggs.group }}</span>
             <span>แผง</span>
-            <span class="t-text-lg">{{ displayEggs.indi }}</span>
-            <span>ฟอง</span>
+            <!-- <span class="t-text-lg">{{ displayEggs.indi }}</span>
+            <span>ฟอง</span> -->
           </div>
         </div>
       </v-card-text>
@@ -25,7 +25,7 @@
       </v-card-actions>
     </v-card>
     <v-form ref="sell-form" lazy-validation class="d-flex flex-column t-gap-2">
-      <span class="font-weight-bold">กำหนดราคาขาย</span>
+      <span class="font-weight-bold">ยอดขายไข่</span>
       <span class="text-grey">
         ราคาไข่ไก่ต่อ 1 แผง : {{ showPriceFrom() }}
       </span>

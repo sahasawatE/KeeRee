@@ -34,11 +34,11 @@ export default defineNuxtComponent({
         title: "แผง",
         align: "end",
       },
-      {
-        key: "indi",
-        title: "ฟอง",
-        align: "end",
-      },
+      // {
+      //   key: "indi",
+      //   title: "ฟอง",
+      //   align: "end",
+      // },
     ];
 
     function calSum(index: number) {
