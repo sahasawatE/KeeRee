@@ -469,13 +469,14 @@ export default defineNuxtComponent({
       this.food_sum.row.D = utils.sum(d);
 
       const ck_sum = this.calSumChicken();
-      const foods = utils.sum([
-        this.food_sum.row.A,
-        this.food_sum.row.B,
-        this.food_sum.row.C,
-        this.food_sum.row.D,
-      ]);
-      this.food_sum.sum = Math.floor((foods / ck_sum) * 100) / 100 || 0;
+      const foods =
+        utils.sum([
+          this.food_sum.row.A,
+          this.food_sum.row.B,
+          this.food_sum.row.C,
+          this.food_sum.row.D,
+        ]) * 1000;
+      this.food_sum.sum = Math.floor((foods / ck_sum) * 100000) / 100 || 0;
     },
     filterAcc() {
       const filter_data = this.filtering(this.acc_data, "date");

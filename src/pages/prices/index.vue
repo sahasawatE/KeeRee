@@ -6,7 +6,7 @@
     <v-card variant="outlined" color="grey-lighten-2">
       <v-card-text class="text-grey-darken-1">
         <div class="d-flex flex-column align-center t-gap-2">
-          <span>จำนวนแผงไข่ทั้งหมด</span>
+          <span>จำนวนแผงไข่คงเหลือ</span>
           <div
             class="text-black font-weight-bold d-flex flex-row align-baseline t-gap-2"
           >

@@ -182,7 +182,7 @@ export default defineNuxtComponent({
           "ll",
         )})`,
       },
-      { title: "จำนวนแผงไข่ไก่รวม", amount: 0, unit: "แผง", remark: "" },
+      { title: "จำนวนไข่ไก่รวม", amount: 0, unit: "ฟอง", remark: "" },
       {
         title: "น้ำหนักไข่ไก่เฉลี่ย",
         amount: 0,
@@ -192,7 +192,7 @@ export default defineNuxtComponent({
       {
         title: "น้ำหนักอาหารเฉลี่ย",
         amount: 0,
-        unit: "กิโลกรัมกรัม",
+        unit: "กรัม",
         remark: "ต่อไก่ 1 ตัว",
       },
     ]);
@@ -354,7 +354,7 @@ export default defineNuxtComponent({
         if (val.length) {
           const g = val.map((e) => Math.floor(e / 30));
 
-          this.summary[1].amount = utils.sum(g);
+          this.summary[1].amount = utils.sum(val);
 
           this.temp_eggs.remain = val;
 
