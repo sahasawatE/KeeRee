@@ -277,6 +277,10 @@ export default defineNuxtComponent({
       type: Number,
       required: true,
     },
+    sumTrash: {
+      type: Number,
+      required: true,
+    },
   },
   components: {
     BarChart,
@@ -322,7 +326,7 @@ export default defineNuxtComponent({
         if (val.length) {
           const g = val.map((e) => Math.floor(e / 30));
           const indi = utils.sum(val);
-          this.remain_indi_eggs = indi;
+          this.remain_indi_eggs = indi + this.$props.sumTrash;
 
           this.temp_eggs.sum_eggs = val;
 

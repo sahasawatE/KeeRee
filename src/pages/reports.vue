@@ -78,6 +78,7 @@
       :weight-sum="weight_sum"
       :food-sum="food_sum"
       :sum-eggs="sum_eggs_sum"
+      :sum-trash="sum_trash"
       :eggs-percent="eggs_percent"
       :egg-remain="egg_remain"
       :chicken-dead="percentDead"
@@ -145,6 +146,7 @@ export default defineNuxtComponent({
     const eggs_percent = ref(0);
     const weight_avg = ref(0);
     const weight_sum = ref(0);
+    const sum_trash = ref(0);
     const food_sum = ref({
       row: {
         A: 0,
@@ -177,6 +179,7 @@ export default defineNuxtComponent({
       egg_remain,
       chicken,
       chicken_first,
+      sum_trash,
     };
   },
   async mounted() {
@@ -411,6 +414,7 @@ export default defineNuxtComponent({
 
       if (data.length) {
         const sorted: SumSchema[] = await utils.dateSort("record_date", data);
+        const sum_trash = utils.sum(sorted.map((e) => e.trash_eggs));
         const s = sorted.at(-1);
 
         const sum_data = [
@@ -420,6 +424,7 @@ export default defineNuxtComponent({
           utils.sum([s!.from_yesterday[3], s!.sum_collect[3], -s!.sum_sell[3]]),
           utils.sum([s!.from_yesterday[4], s!.sum_collect[4], -s!.sum_sell[4]]),
         ];
+        this.sum_trash = sum_trash;
         this.sum_eggs_sum = sum_data;
       } else {
         this.sum_eggs_sum = [0, 0, 0, 0, 0];

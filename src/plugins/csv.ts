@@ -534,9 +534,9 @@ export default defineNuxtPlugin(() => {
     },
   ) {
     // create heading
-    const collect_heading = [Object.keys(data.collect_eggs_csv[0])];
-    const sell_heading = [Object.keys(data.sell_eggs_csv[0])];
-    const acc_heading = [Object.keys(data.accounting_csv[0])];
+    const collect_heading = [Object.keys(createHeader().collectEggs)];
+    const sell_heading = [Object.keys(createHeader().sellEggs)];
+    const acc_heading = [Object.keys(createHeader().accounting)];
 
     // new work book
     const wb = XLSX.utils.book_new();
